@@ -1,0 +1,111 @@
+/* src/components/home/tools.css */
+.tools-section {
+  background-color: #0a0a0a;
+  padding: 4rem 2rem;
+  margin-bottom: 4rem;
+  border-radius: 12px;
+}
+
+.tools-content {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.tools-content h2 {
+  font-size: 3rem;
+  margin-bottom: 1.5rem;
+  color: #ffffff;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.tools-content h2 span {
+  color: #e8a33c;
+}
+
+.tools-content p {
+  color: #aaaaaa;
+  max-width: 700px;
+  margin: 0 auto 2rem;
+  font-size: 1.1rem;
+  line-height: 1.8;
+}
+
+.btn-gold {
+  background: #e8a33c;
+  color: #0a0a0a;
+  border: none;
+  padding: 0.8rem 2.2rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  display: inline-block;
+  letter-spacing: 1px;
+}
+
+.btn-gold:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(232, 163, 60, 0.35);
+  background: #f0b458;
+}
+
+.tools-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.tool-card {
+  background: linear-gradient(145deg, #1a1a1a, #0d0d0d);
+  padding: 2.5rem 2rem;
+  border-radius: 12px;
+  text-align: center;
+  border: 1px solid #2a2a2a;
+  transition: all 0.4s ease;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.tool-card:hover {
+  transform: translateY(-10px);
+  border-color: #e8a33c;
+  box-shadow: 0 8px 40px rgba(232, 163, 60, 0.1);
+  background: linear-gradient(145deg, #222, #111);
+}
+
+.tool-icon {
+  color: #e8a33c;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tool-card h3 {
+  color: #ffffff;
+  font-size: 1.1rem;
+  margin-bottom: 0.75rem;
+  letter-spacing: 1px;
+  font-weight: 600;
+}
+
+.tool-card p {
+  color: #888;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+  .tools-content h2 {
+    font-size: 2rem;
+  }
+
+  .tools-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .tools-section {
+    padding: 3rem 1.2rem;
+  }
+}

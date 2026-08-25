@@ -1,0 +1,135 @@
+/* src/component/recent.css */
+.recent-section {
+  background-color: #0a0a0a;
+  padding: 3.5rem 2rem;
+  border-radius: 12px;
+  margin-bottom: 3rem;
+  border: 1px solid #2a2a2a;
+}
+
+.recent-header {
+  margin-bottom: 2rem;
+}
+
+.recent-label {
+  color: #e8a33c;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+
+.recent-header h2 {
+  color: #ffffff;
+  font-size: 1.9rem;
+  font-weight: 800;
+  line-height: 1.3;
+  margin-top: 0.6rem;
+  letter-spacing: 0.5px;
+}
+
+.recent-header h2 span {
+  color: #e8a33c;
+}
+
+.recent-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+}
+
+.recent-card {
+  background: #141414;
+  border: 1px solid #2a2a2a;
+  border-radius: 10px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.recent-card:hover {
+  transform: translateY(-6px);
+  border-color: #e8a33c;
+  box-shadow: 0 10px 30px rgba(232, 163, 60, 0.15);
+}
+
+.recent-image-wrap {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background: #1a1a1a;
+  overflow: hidden;
+}
+
+.recent-image-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.4s ease;
+}
+
+.recent-card:hover .recent-image-wrap img {
+  transform: scale(1.06);
+}
+
+.recent-info {
+  padding: 1rem 1.1rem 1.3rem;
+}
+
+.recent-info h3 {
+  color: #ffffff;
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+  line-height: 1.4;
+}
+
+.recent-price {
+  color: #e8a33c;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.recent-cta {
+  text-align: center;
+  margin-top: 2.5rem;
+}
+
+.btn-view-all {
+  display: inline-block;
+  background: transparent;
+  color: #ffffff;
+  border: 1.5px solid #ffffff;
+  padding: 0.8rem 2.2rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+.btn-view-all:hover {
+  background: #e8a33c;
+  border-color: #e8a33c;
+  color: #0a0a0a;
+  transform: translateY(-3px);
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+  .recent-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .recent-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .recent-section {
+    padding: 2rem 1.2rem;
+  }
+
+  .recent-header h2 {
+    font-size: 1.5rem;
+  }
+}
