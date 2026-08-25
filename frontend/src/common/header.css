@@ -1,0 +1,87 @@
+/* src/common/header.css (Full Navigation) */
+.header {
+  background-color: #000000;
+  padding: 1rem 2rem;
+  border-bottom: 1px solid #333333;
+}
+
+.header-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo-section h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: 2px;
+  margin: 0;
+}
+
+.tagline {
+  display: block;
+  font-size: 0.7rem;
+  color: #888888;
+  letter-spacing: 1px;
+  margin-top: -2px;
+}
+
+.nav-links {
+  display: flex;
+  list-style: none;
+  gap: 2rem;
+  margin: 0;
+  padding: 0;
+}
+
+.nav-link {
+  color: #ffffff;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 400;
+  padding: 0.5rem 0;
+  transition: color 0.3s ease;
+  letter-spacing: 0.5px;
+}
+
+.nav-link:hover {
+  color: #cccccc;
+}
+
+.nav-link.active {
+  color: #ffffff;
+  border-bottom: 2px solid #ffffff;
+}
+
+@media (max-width: 768px) {
+  .header {
+    padding: 1rem;
+  }
+  
+  .header-container {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .logo-section h1 {
+    font-size: 1.5rem;
+    text-align: center;
+  }
+  
+  .tagline {
+    text-align: center;
+  }
+  
+  .nav-links {
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .nav-link {
+    font-size: 0.8rem;
+  }
+}
