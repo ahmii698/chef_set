@@ -1,26 +1,39 @@
 // src/components/productDetail.jsx
 import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { FaTruck, FaStar, FaUndo, FaShoppingCart, FaChevronRight, FaHeart } from 'react-icons/fa';
 import './productDetail.css';
+
+// Import product images
+import p1 from '/images/p1.png';
+import p2 from '/images/p2.png';
+import p3 from '/images/p3.png';
+import p4 from '/images/p4.png';
+import p5 from '/images/p5.png';
+import p6 from '/images/p6.png';
+import p7 from '/images/p7.png';
+import p8 from '/images/p8.png';
 
 const productData = {
   1: {
     name: 'Professional Chef Knife',
-    price: 'PHR 8,500',
-    description: 'High carbon stainless steel blade for exceptional sharpness and edge retention. Ergonomic handle fits comfortably over the hand.',
-    image: '🔪',
+    price: 'PKR 8,500',
+    rating: 5,
+    description: 'High-carbon premium steel blade for exceptional sharpness and edge retention. Ergonomic handle for comfortable grip.',
+    images: [p1, p1, p1, p1],
     features: [
       'High-carbon stainless steel blade',
       'Ergonomic ergonomic handle',
-      'Flat top for perfect balance',
-      'Premium grip for durability'
+      'Full tang for perfect balance',
+      'Precision ground to durability'
     ]
   },
   2: {
     name: 'Tongs & Spatulas Set',
-    price: 'PHR 8,500',
+    price: 'PKR 8,500',
+    rating: 5,
     description: 'Professional grade utensils designed for precision cooking. Heat resistant and durable.',
-    image: '🥄',
+    images: [p2, p2, p2, p2],
     features: [
       'Heat resistant up to 400°F',
       'Non-slip grip handles',
@@ -30,9 +43,10 @@ const productData = {
   },
   3: {
     name: 'Stainless Steel Containers',
-    price: 'PHR 8,500',
+    price: 'PKR 8,500',
+    rating: 5,
     description: 'Premium stainless steel containers for professional storage. Airtight and durable.',
-    image: '📦',
+    images: [p3, p3, p3, p3],
     features: [
       '18/8 stainless steel',
       'Airtight lids',
@@ -42,9 +56,10 @@ const productData = {
   },
   4: {
     name: 'Premium Cutlery Set',
-    price: 'PHR 8,500',
+    price: 'PKR 8,500',
+    rating: 5,
     description: 'Complete cutlery set for professional and home use. Precision forged for durability.',
-    image: '🍴',
+    images: [p4, p4, p4, p4],
     features: [
       'Precision forged blades',
       'Ergonomic handles',
@@ -54,9 +69,10 @@ const productData = {
   },
   5: {
     name: 'Non-Stick Frying Pan',
-    price: 'PHR 8,500',
+    price: 'PKR 8,500',
+    rating: 5,
     description: 'Professional non-stick frying pan for perfect cooking results every time.',
-    image: '🍳',
+    images: [p5, p5, p5, p5],
     features: [
       'Premium non-stick coating',
       'Even heat distribution',
@@ -66,9 +82,10 @@ const productData = {
   },
   6: {
     name: 'Professional Mixing Bowl',
-    price: 'PHR 8,500',
+    price: 'PKR 8,500',
+    rating: 5,
     description: 'Heavy-duty mixing bowl for professional kitchens. Perfect for all mixing tasks.',
-    image: '🥣',
+    images: [p6, p6, p6, p6],
     features: [
       'Stainless steel construction',
       'Non-slip base',
@@ -78,9 +95,10 @@ const productData = {
   },
   7: {
     name: 'Modern Cutting Board',
-    price: 'PHR 8,500',
+    price: 'PKR 8,500',
+    rating: 5,
     description: 'Professional grade cutting board with modern design. Durable and easy to clean.',
-    image: '🪵',
+    images: [p7, p7, p7, p7],
     features: [
       'Premium bamboo construction',
       'Non-slip edges',
@@ -90,9 +108,10 @@ const productData = {
   },
   8: {
     name: 'Kids Mixer Set',
-    price: 'PHR 8,500',
+    price: 'PKR 8,500',
+    rating: 5,
     description: 'Safe and fun mixer set for young chefs. Educational and entertaining.',
-    image: '🎛️',
+    images: [p8, p8, p8, p8],
     features: [
       'Safe plastic construction',
       'BPA-free materials',
@@ -105,6 +124,7 @@ const productData = {
 const ProductDetail = () => {
   const { id } = useParams();
   const [quantity, setQuantity] = useState(1);
+  const [mainImage, setMainImage] = useState(0);
   const product = productData[id];
 
   if (!product) {
@@ -122,16 +142,47 @@ const ProductDetail = () => {
 
   return (
     <div className="product-detail">
+      {/* Breadcrumb */}
+      <div className="product-breadcrumb">
+        <Link to="/">Home</Link>
+        <FaChevronRight className="breadcrumb-arrow" />
+        <Link to="/products">Products</Link>
+        <FaChevronRight className="breadcrumb-arrow" />
+        <span>{product.name}</span>
+      </div>
+
       <div className="product-detail-container">
-        <div className="product-detail-image">
-          <div className="product-emoji">{product.image}</div>
+        {/* Left Side - Vertical Thumbnails */}
+        <div className="product-thumbnails-col">
+          {product.images.map((img, index) => (
+            <div
+              key={index}
+              className={`thumbnail ${mainImage === index ? 'active' : ''}`}
+              onClick={() => setMainImage(index)}
+            >
+              <img src={img} alt={`${product.name} ${index + 1}`} />
+            </div>
+          ))}
         </div>
-        
+
+        {/* Center - Main Image */}
+        <div className="product-main-image">
+          <img src={product.images[mainImage]} alt={product.name} />
+        </div>
+
+        {/* Right Side - Info */}
         <div className="product-detail-info">
           <h1>{product.name}</h1>
+
+          <div className="product-rating">
+            {[...Array(product.rating)].map((_, i) => (
+              <FaStar key={i} className="rating-star" />
+            ))}
+          </div>
+
           <p className="product-detail-price">{product.price}</p>
           <p className="product-detail-description">{product.description}</p>
-          
+
           <div className="product-features">
             <h3>FEATURES:</h3>
             <ul>
@@ -141,41 +192,45 @@ const ProductDetail = () => {
             </ul>
           </div>
 
+          <div className="quantity-selector">
+            <label>Quantity:</label>
+            <input
+              type="number"
+              min="1"
+              max="10"
+              value={quantity}
+              onChange={handleQuantityChange}
+            />
+          </div>
+
           <div className="product-actions">
-            <div className="quantity-selector">
-              <label>Quantity:</label>
-              <input
-                type="number"
-                min="1"
-                max="10"
-                value={quantity}
-                onChange={handleQuantityChange}
-              />
-            </div>
-            
-            <button className="btn-add-to-cart">ADD TO CART</button>
-            <button className="btn-learn-more">LEARN MORE</button>
+            <button className="btn-add-to-cart">
+              <FaShoppingCart className="btn-icon" /> ADD TO CART
+            </button>
+            <button className="btn-wishlist">
+              <FaHeart className="btn-icon" /> WISHLIST
+            </button>
           </div>
 
           <div className="product-benefits">
             <div className="benefit-item">
-              <span>🚚</span>
+              <FaTruck className="benefit-icon" />
               <div>
                 <h4>FREE SHIPPING</h4>
-                <p>On all orders above PHR 8,000</p>
+                <p>On all orders above PKR 8,000</p>
               </div>
             </div>
             <div className="benefit-item">
-              <span>⭐</span>
+              <FaStar className="benefit-icon" />
               <div>
                 <h4>QUALITY GUARANTEE</h4>
                 <p>100% satisfaction guarantee</p>
               </div>
             </div>
             <div className="benefit-item">
-              <span>🔄</span>
+              <FaUndo className="benefit-icon" />
               <div>
-                <h4>SAVE KITCHEN</h4>
+                <h4>EASY RETURNS</h4>
                 <p>30-day returns policy</p>
               </div>
             </div>

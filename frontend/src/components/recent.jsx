@@ -8,25 +8,25 @@ const recentProducts = [
     id: 1,
     name: 'Professional Chef Knife',
     price: 'PKR 8,500',
-    image: '/images/product-1.jpg',
+    image: '/images/cs1.jpg',
   },
   {
     id: 2,
     name: 'Stainless Steel Cookware',
     price: 'PKR 24,000',
-    image: '/images/product-2.jpg',
+    image: '/images/cs2.jpg',
   },
   {
     id: 3,
     name: 'Cast Iron Grill Pan',
     price: 'PKR 6,900',
-    image: '/images/product-3.jpg',
+    image: '/images/cs3.jpg',
   },
   {
     id: 4,
     name: 'Professional Mixing Bowl',
     price: 'PKR 3,200',
-    image: '/images/product-4.jpg',
+    image: '/images/cs4.jpg',
   },
 ];
 
