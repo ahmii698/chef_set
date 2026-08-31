@@ -13,8 +13,12 @@ import Products from './components/products';
 import ProductDetail from './components/productDetail';
 import About from './components/about';
 import Contact from './components/contact';
-import Testimonials from './components/testimonials';
-import Billing from './components/billing';
+import FAQ from './components/faq/faq';
+import Cart from './components/cart/cart';
+import Wishlist from './components/wishlist/wishlist';
+import Profile from './components/profile/profile';
+import CheckoutPage from './components/checkout/CheckoutPage';
+import TrackOrder from './components/checkout/trackorder';
 
 function App() {
   return (
@@ -27,9 +31,13 @@ function App() {
             <Route path="/products" element={<Products />} />
             <Route path="/product/:id" element={<ProductDetail />} />
             <Route path="/about" element={<About />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/testimonials" element={<Testimonials />} />
-            <Route path="/billing" element={<Billing />} />
+            <Route path="/faq" element={<FAQ />} />
+            <Route path="/contact" element={<Contact />} />        {/* ← CONTACT PEHLE */}
+            <Route path="/trackorder" element={<TrackOrder />} />  {/* ← TRACK ORDER BAAD MEIN */}
+            <Route path="/cart" element={<Cart />} />
+            <Route path="/wishlist" element={<Wishlist />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/checkout" element={<CheckoutPage />} />
           </Routes>
         </main>
         <Footer />

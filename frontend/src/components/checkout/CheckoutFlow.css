@@ -1,0 +1,22 @@
+/* Shared tokens for the whole checkout flow.
+   Har step ki CSS inhi variables ko use karti hai
+   taake sab jagah Chefset ka dark + orange theme rahe. */
+
+.checkout-flow {
+  --bg: #0a0a0a;
+  --panel: #141414;
+  --panel-alt: #1a1610;
+  --border: #2a2a2a;
+  --border-gold: #4a3a1a;
+  --gold: #e8a33c;
+  --gold-bright: #f0b95c;
+  --text: #f2f2f2;
+  --text-muted: #9a9a9a;
+  --success: #3fae5c;
+  --radius: 16px;
+
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+}

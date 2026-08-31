@@ -24,7 +24,7 @@ const About = () => {
           backgroundImage: "url('/images/chi1.png')"
         }}
       >
-        <div className="about-hero-content">
+        <div className="about-hero-overlay">
           <span className="about-tag">ABOUT US</span>
           <h1>
             BUILT FOR CHEFS. <br />

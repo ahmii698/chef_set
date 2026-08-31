@@ -1,0 +1,157 @@
+.placed-page {
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 60px 20px 80px;
+}
+
+.placed-card {
+  background: var(--panel, #141414);
+  border: 1px solid var(--border, #2a2a2a);
+  border-radius: var(--radius, 16px);
+  padding: 36px 32px;
+  text-align: center;
+}
+
+.placed-icon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 16px;
+  border-radius: 50%;
+  background: rgba(232, 163, 60, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  color: var(--gold, #e8a33c);
+}
+
+.placed-card h1 {
+  margin: 0 0 14px;
+  font-size: 22px;
+  color: #ffffff;
+}
+
+.order-id-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #0d0d0d;
+  border: 1px solid var(--border, #2a2a2a);
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+
+.order-id-pill span {
+  color: var(--text-muted, #9a9a9a);
+}
+
+.order-id-pill strong {
+  color: var(--gold, #e8a33c);
+  letter-spacing: 0.02em;
+}
+
+.placed-success {
+  color: var(--gold-bright, #f0b95c);
+  font-weight: 600;
+  font-size: 14.5px;
+  margin: 0 0 20px;
+}
+
+.pending-box {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  text-align: left;
+  background: var(--panel-alt, #1a1610);
+  border: 1px solid var(--border-gold, #4a3a1a);
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin-bottom: 20px;
+}
+
+.pending-icon {
+  color: var(--gold, #e8a33c);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.pending-box p {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--text-muted, #9a9a9a);
+}
+
+.next-steps-box {
+  text-align: left;
+  background: #0d0d0d;
+  border: 1px solid var(--border, #2a2a2a);
+  border-radius: 8px;
+  padding: 18px;
+  margin-bottom: 26px;
+}
+
+.next-steps-box h4 {
+  margin: 0 0 12px;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  color: var(--gold, #e8a33c);
+}
+
+.next-steps-box ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.next-steps-box li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13.5px;
+  color: var(--text-muted, #9a9a9a);
+  margin-bottom: 12px;
+}
+
+.next-steps-box li:last-child {
+  margin-bottom: 0;
+}
+
+.step-icon {
+  flex-shrink: 0;
+  display: flex;
+  color: var(--gold, #e8a33c);
+}
+
+.placed-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.placed-actions .btn-primary {
+  flex: 1;
+  padding: 13px;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--gold-bright, #f0b95c), var(--gold, #e8a33c));
+  color: #1a1400;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.placed-actions .btn-secondary {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 13px;
+  border: 1px solid var(--border, #2a2a2a);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text, #f2f2f2);
+  font-size: 14px;
+  cursor: pointer;
+}

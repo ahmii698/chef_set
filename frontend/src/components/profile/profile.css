@@ -1,0 +1,393 @@
+/* src/components/profile/profile.css */
+.pr-page {
+  background-color: #0d0d0d;
+  color: #f5f5f5;
+  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+  padding: 32px 40px;
+  min-height: 100vh;
+}
+
+/* Header */
+.pr-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.pr-title {
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0 0 6px 0;
+  letter-spacing: 0.5px;
+  color: #ffffff;
+}
+
+.pr-breadcrumb {
+  font-size: 13px;
+  color: #9a9a9a;
+}
+
+.pr-breadcrumb-sep {
+  margin: 0 6px;
+  color: #666;
+}
+
+.pr-breadcrumb-active {
+  color: #e6a730;
+}
+
+/* Buttons */
+.pr-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.pr-btn:hover {
+  opacity: 0.85;
+}
+
+.pr-btn-outline {
+  background: transparent;
+  border-color: #e6a730;
+  color: #e6a730;
+}
+
+.pr-btn-outline:hover {
+  background: rgba(230, 167, 48, 0.1);
+}
+
+.pr-btn-primary {
+  background: #e6a730;
+  color: #1a1a1a;
+}
+
+.pr-btn-primary:hover {
+  background: #f0b458;
+  transform: translateY(-2px);
+}
+
+/* Stats row */
+.pr-stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.pr-stat-card {
+  background: #161616;
+  border: 1px solid #262626;
+  border-radius: 10px;
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.pr-stat-icon {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  border-radius: 50%;
+  background: #221a0d;
+  color: #e6a730;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pr-stat-label {
+  font-size: 11px;
+  color: #9a9a9a;
+  letter-spacing: 0.4px;
+  margin-bottom: 4px;
+}
+
+.pr-stat-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.pr-stat-sub {
+  font-size: 11px;
+  color: #7a7a7a;
+  margin-top: 2px;
+}
+
+/* Content grid */
+.pr-content {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.pr-panel {
+  background: #161616;
+  border: 1px solid #262626;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.pr-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid #262626;
+}
+
+.pr-panel-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.pr-link-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  border: none;
+  color: #e6a730;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.pr-link-btn:hover {
+  color: #f0b458;
+}
+
+/* Orders */
+.pr-orders-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.pr-order-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 20px;
+  border-bottom: 1px solid #232323;
+}
+
+.pr-order-row:last-child {
+  border-bottom: none;
+}
+
+.pr-order-thumb {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  object-fit: cover;
+  background: #1f1f1f;
+  border: 1px solid #2a2a2a;
+}
+
+.pr-order-info {
+  flex: 1;
+}
+
+.pr-order-id {
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.pr-order-meta {
+  font-size: 11px;
+  color: #9a9a9a;
+  margin-top: 2px;
+}
+
+.pr-status-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 20px;
+  margin-right: 16px;
+  white-space: nowrap;
+}
+
+.pr-status-delivered {
+  background: rgba(76, 175, 80, 0.15);
+  color: #4caf50;
+}
+
+.pr-status-shipped {
+  background: rgba(33, 150, 243, 0.15);
+  color: #2196f3;
+}
+
+.pr-status-processing {
+  background: rgba(230, 167, 48, 0.15);
+  color: #e6a730;
+}
+
+.pr-order-price {
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  margin-right: 8px;
+}
+
+.pr-order-arrow {
+  color: #666;
+}
+
+/* Settings */
+.pr-settings-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.pr-settings-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px;
+  border-bottom: 1px solid #232323;
+  background: transparent;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  transition: background 0.2s ease;
+}
+
+.pr-settings-row:last-child {
+  border-bottom: none;
+}
+
+.pr-settings-row:hover {
+  background: #1c1c1c;
+}
+
+.pr-settings-icon {
+  width: 34px;
+  height: 34px;
+  min-width: 34px;
+  border-radius: 8px;
+  background: #1f1f1f;
+  color: #e6a730;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pr-settings-info {
+  flex: 1;
+}
+
+.pr-settings-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.pr-settings-desc {
+  font-size: 11px;
+  color: #9a9a9a;
+  margin-top: 2px;
+}
+
+.pr-settings-arrow {
+  color: #666;
+}
+
+/* Help footer */
+.pr-help-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #161616;
+  border: 1px solid #262626;
+  border-radius: 10px;
+  padding: 20px 24px;
+  margin-top: 20px;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.pr-help-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.pr-help-icon {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  border-radius: 50%;
+  background: #221a0d;
+  color: #e6a730;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pr-help-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.pr-help-desc {
+  font-size: 12px;
+  color: #9a9a9a;
+  margin-top: 2px;
+}
+
+/* Responsive */
+@media (max-width: 1000px) {
+  .pr-stats-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .pr-content {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .pr-page {
+    padding: 20px;
+  }
+  .pr-header {
+    flex-direction: column;
+  }
+  .pr-stats-row {
+    grid-template-columns: 1fr;
+  }
+  .pr-help-footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .pr-order-row {
+    flex-wrap: wrap;
+  }
+  .pr-order-thumb {
+    width: 36px;
+    height: 36px;
+  }
+}

@@ -2,6 +2,8 @@
 import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { FaTruck, FaStar, FaUndo, FaShoppingCart, FaChevronRight, FaHeart } from 'react-icons/fa';
+import { addToCart } from '../utils/cart';
+import { isInWishlist, addToWishlist } from '../utils/wishlist';
 import './productDetail.css';
 
 // Import product images
@@ -125,7 +127,13 @@ const ProductDetail = () => {
   const { id } = useParams();
   const [quantity, setQuantity] = useState(1);
   const [mainImage, setMainImage] = useState(0);
+  const [toast, setToast] = useState('');
   const product = productData[id];
+
+  const showToast = (message) => {
+    setToast(message);
+    setTimeout(() => setToast(''), 2000);
+  };
 
   if (!product) {
     return (
@@ -140,13 +148,66 @@ const ProductDetail = () => {
     setQuantity(parseInt(e.target.value) || 1);
   };
 
+  const handleAddToCart = () => {
+    addToCart(
+      {
+        id: Number(id),
+        name: product.name,
+        desc: product.description,
+        price: parseFloat(product.price.replace(/[^0-9.]/g, '')) || 0,
+        image: product.images[0],
+      },
+      quantity
+    );
+    showToast('Added to cart');
+  };
+
+  const handleWishlistClick = () => {
+    const productId = Number(id);
+    if (isInWishlist(productId)) {
+      showToast('Already in wishlist');
+      return;
+    }
+    addToWishlist({
+      id: productId,
+      name: product.name,
+      desc: product.description,
+      price: parseFloat(product.price.replace(/[^0-9.]/g, '')) || 0,
+      image: product.images[0],
+      inStock: true,
+      shipping: 'Ships in 1-2 days',
+    });
+    showToast('Added to wishlist');
+  };
+
   return (
     <div className="product-detail">
+      {toast && (
+        <div
+          style={{
+            position: 'fixed',
+            top: '90px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            background: '#1a1610',
+            border: '1px solid #e8a33c',
+            color: '#f0b95c',
+            padding: '10px 20px',
+            borderRadius: '8px',
+            fontSize: '0.85rem',
+            fontWeight: 600,
+            zIndex: 999,
+          }}
+        >
+          {toast}
+        </div>
+      )}
+
       {/* Breadcrumb */}
       <div className="product-breadcrumb">
         <Link to="/">Home</Link>
         <FaChevronRight className="breadcrumb-arrow" />
-        <Link to="/products">Products</Link>
+        <Link to="/products">Shop</Link>
         <FaChevronRight className="breadcrumb-arrow" />
         <span>{product.name}</span>
       </div>
@@ -204,10 +265,10 @@ const ProductDetail = () => {
           </div>
 
           <div className="product-actions">
-            <button className="btn-add-to-cart">
+            <button className="btn-add-to-cart" onClick={handleAddToCart}>
               <FaShoppingCart className="btn-icon" /> ADD TO CART
             </button>
-            <button className="btn-wishlist">
+            <button className="btn-wishlist" onClick={handleWishlistClick}>
               <FaHeart className="btn-icon" /> WISHLIST
             </button>
           </div>

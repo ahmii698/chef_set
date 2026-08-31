@@ -1,7 +1,8 @@
 // src/components/products.jsx
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { FaHeart, FaArrowRight } from 'react-icons/fa';
+import { isInWishlist, addToWishlist } from '../utils/wishlist';
 import './products.css';
 
 const products = [
@@ -72,8 +73,57 @@ const products = [
 ];
 
 const Products = () => {
+  const navigate = useNavigate();
+  const [toast, setToast] = useState('');
+
+  const showToast = (message) => {
+    setToast(message);
+    setTimeout(() => setToast(''), 2000);
+  };
+
+  const handleWishlistClick = (product) => {
+    // Already wishlist mein hai -> kuch nahi karna, sirf message dikhana
+    if (isInWishlist(product.id)) {
+      showToast('Already in wishlist');
+      return;
+    }
+
+    // Naya item -> wishlist mein add karo, isi page par raho
+    addToWishlist({
+      id: product.id,
+      name: product.name,
+      desc: product.description,
+      price: parseFloat(product.price.replace(/[^0-9.]/g, '')) || 0,
+      image: product.image,
+      inStock: true,
+      shipping: 'Ships in 1-2 days',
+    });
+    showToast('Added to wishlist');
+  };
+
   return (
     <div className="products">
+      {toast && (
+        <div
+          style={{
+            position: 'fixed',
+            top: '90px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            background: '#1a1610',
+            border: '1px solid #e8a33c',
+            color: '#f0b95c',
+            padding: '10px 20px',
+            borderRadius: '8px',
+            fontSize: '0.85rem',
+            fontWeight: 600,
+            zIndex: 999,
+          }}
+        >
+          {toast}
+        </div>
+      )}
+
       <div className="products-header">
         <h1>PREMIUM <span>KITCHEN EQUIPMENT</span></h1>
         <p>
@@ -93,7 +143,11 @@ const Products = () => {
                 <span className="product-badge">{product.category}</span>
 
                 {/* Wishlist Heart - overlaid top-right */}
-                <button className="wishlist-btn" aria-label="Add to wishlist">
+                <button
+                  className={`wishlist-btn ${isInWishlist(product.id) ? 'active' : ''}`}
+                  aria-label="Add to wishlist"
+                  onClick={() => handleWishlistClick(product)}
+                >
                   <FaHeart />
                 </button>
 
@@ -119,7 +173,7 @@ const Products = () => {
       </div>
 
       {/* View All Button */}
-      
+
     </div>
   );
 };

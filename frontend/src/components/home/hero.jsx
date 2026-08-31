@@ -14,8 +14,8 @@ const Hero = () => {
           and everyday professional cooking.
         </p>
         <div className="hero-buttons">
-          <Link to="/products" className="btn-primary">EXPLORE PRODUCTS</Link>
-          <Link to="/about" className="btn-secondary">DISCOVER CRAFT</Link>
+          <Link to="/products" className="hero-btn-primary">EXPLORE PRODUCTS</Link>
+          <Link to="/about" className="hero-btn-secondary">DISCOVER CRAFT</Link>
         </div>
       </div>
     </section>

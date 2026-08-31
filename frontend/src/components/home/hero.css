@@ -56,7 +56,7 @@
   gap: 1rem;
   flex-wrap: wrap;
 }
-.btn-primary {
+.hero-buttons .hero-btn-primary {
   background: #e8a33c;
   color: #0a0a0a;
   border: none;
@@ -67,13 +67,16 @@
   transition: all 0.3s ease;
   display: inline-block;
   letter-spacing: 0.5px;
+  width: auto;
+  text-align: left;
+  text-decoration: none;
 }
-.btn-primary:hover {
+.hero-buttons .hero-btn-primary:hover {
   transform: translateY(-3px);
   box-shadow: 0 8px 25px rgba(232, 163, 60, 0.4);
   background: #f0b458;
 }
-.btn-secondary {
+.hero-buttons .hero-btn-secondary {
   background: transparent;
   color: #ffffff;
   border: 1.5px solid #ffffff;
@@ -84,8 +87,12 @@
   transition: all 0.3s ease;
   display: inline-block;
   letter-spacing: 0.5px;
+  width: auto;
+  white-space: nowrap;
+  text-align: left;
+  text-decoration: none;
 }
-.btn-secondary:hover {
+.hero-buttons .hero-btn-secondary:hover {
   background: rgba(255, 255, 255, 0.1);
   transform: translateY(-3px);
 }
@@ -108,9 +115,10 @@
     align-items: stretch;
     width: 100%;
   }
-  .btn-primary,
-  .btn-secondary {
+  .hero-buttons .hero-btn-primary,
+  .hero-buttons .hero-btn-secondary {
     text-align: center;
     width: 100%;
+    white-space: normal;
   }
 }
