@@ -1,7 +1,6 @@
 // src/utils/cart.js
-// Cart ka data localStorage mein persist karta hai — Cart page bhi
-// isi "cart" key ko use karta hai, isliye yahan se add kiya hua item
-// seedha cart page par bhi dikhega.
+// Cart ka data localStorage mein persist karta hai — Header aur Cart page
+// dono isi "cart" key ko use karte hain, isliye har jagah sync rehta hai.
 
 const STORAGE_KEY = "cart";
 
@@ -28,4 +27,20 @@ export function addToCart(item, qty = 1) {
   }
   saveCart(cart);
   return cart;
+}
+
+export function updateCartQty(id, qty) {
+  const cart = getCart();
+  const updated = cart.map((item) =>
+    item.id === id ? { ...item, qty: Math.max(1, qty) } : item
+  );
+  saveCart(updated);
+  return updated;
+}
+
+export function removeFromCart(id) {
+  const cart = getCart();
+  const updated = cart.filter((item) => item.id !== id);
+  saveCart(updated);
+  return updated;
 }

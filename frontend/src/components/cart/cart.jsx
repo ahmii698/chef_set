@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   FaTrash,
@@ -18,54 +18,39 @@ import {
   FaCcPaypal,
   FaCcDiscover,
 } from 'react-icons/fa';
+import { getCart, updateCartQty, removeFromCart } from '../../utils/cart';
 import './cart.css';
-
-const initialItems = [
-  {
-    id: 1,
-    name: 'Chef Knife 8 Inch',
-    desc: 'High carbon stainless steel',
-    price: 49.99,
-    qty: 1,
-    inStock: true,
-    image: '/images/p1.png',
-  },
-  {
-    id: 2,
-    name: 'Stainless Steel Stock Pot 24cm',
-    desc: 'Premium quality steel',
-    price: 79.99,
-    qty: 1,
-    inStock: true,
-    image: '/images/p2.png',
-  },
-  {
-    id: 3,
-    name: 'Non-Stick Frying Pan 28cm',
-    desc: 'Durable non-stick coating',
-    price: 39.99,
-    qty: 2,
-    inStock: true,
-    image: '/images/p3.png',
-  },
-];
 
 const Cart = () => {
   const navigate = useNavigate();
-  const [items, setItems] = useState(initialItems);
+  const [items, setItems] = useState([]);
+
+  const refreshItems = () => {
+    setItems(getCart());
+  };
+
+  useEffect(() => {
+    refreshItems();
+
+    window.addEventListener('cart-updated', refreshItems);
+    window.addEventListener('storage', refreshItems);
+
+    return () => {
+      window.removeEventListener('cart-updated', refreshItems);
+      window.removeEventListener('storage', refreshItems);
+    };
+  }, []);
 
   const updateQty = (id, delta) => {
-    setItems((prev) =>
-      prev.map((item) =>
-        item.id === id
-          ? { ...item, qty: Math.max(1, item.qty + delta) }
-          : item
-      )
-    );
+    const current = items.find((item) => item.id === id);
+    if (!current) return;
+    updateCartQty(id, current.qty + delta);
+    refreshItems();
   };
 
   const removeItem = (id) => {
-    setItems((prev) => prev.filter((item) => item.id !== id));
+    removeFromCart(id);
+    refreshItems();
   };
 
   const subtotal = items.reduce((sum, item) => sum + item.price * item.qty, 0);
@@ -122,7 +107,7 @@ const Cart = () => {
                   </div>
                   <div>
                     <p className="cart-product-name">{item.name}</p>
-                    <p className="cart-product-desc">{item.desc}</p>
+                    {item.desc && <p className="cart-product-desc">{item.desc}</p>}
                     {item.inStock && (
                       <span className="cart-stock-badge">
                         <span className="stock-dot" />
