@@ -1,0 +1,141 @@
+.category-section {
+  width: 100%;
+  padding: 100px 40px 90px;
+  background-color: #0d0d0d; /* black theme */
+  text-align: center;
+}
+
+.category-heading {
+  font-family: "Playfair Display", serif;
+  font-size: 42px;
+  color: #f5f5f5;
+  margin-bottom: 40px;
+}
+
+.accordion-wrapper {
+  display: flex;
+  width: 100%;
+  height: 520px;
+  gap: 6px;
+  max-width: 1300px;
+  margin: 0 auto;
+}
+
+.accordion-item {
+  position: relative;
+  flex: 1;
+  border-radius: 6px;
+  overflow: hidden;
+  cursor: pointer;
+  background-size: cover;
+  background-position: center;
+  background-color: #1a1a1a; /* fallback agar image na milay */
+  transition: flex 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  min-width: 60px;
+}
+
+.accordion-item.active {
+  flex: 5;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.8) 0%,
+    rgba(0, 0, 0, 0.3) 50%,
+    rgba(0, 0, 0, 0.5) 100%
+  );
+  transition: background 0.4s ease;
+}
+
+/* Collapsed panel: vertical rotated title */
+.vertical-title {
+  position: absolute;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%) rotate(180deg);
+  writing-mode: vertical-rl;
+  color: #f5f5f5;
+  font-size: 15px;
+  letter-spacing: 2px;
+  font-weight: 500;
+  white-space: nowrap;
+  z-index: 2;
+}
+
+/* Expanded panel content */
+.active-content {
+  position: absolute;
+  bottom: 30px;
+  left: 30px;
+  color: #f5f5f5;
+  text-align: left;
+  animation: fadeUp 0.5s ease;
+  z-index: 2;
+}
+
+.collection-label {
+  font-size: 12px;
+  letter-spacing: 2px;
+  color: #d8b978; /* gold accent */
+  font-weight: 600;
+}
+
+.active-title {
+  font-family: "Playfair Display", serif;
+  font-size: 34px;
+  margin: 6px 0 12px 0;
+  color: #ffffff;
+}
+
+.shop-now {
+  color: #ffffff;
+  text-decoration: none;
+  font-size: 13px;
+  letter-spacing: 1px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+  padding-bottom: 4px;
+  transition: opacity 0.3s ease;
+}
+
+.shop-now:hover {
+  opacity: 0.7;
+}
+
+.arrow {
+  display: inline-block;
+  margin-left: 4px;
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .accordion-wrapper {
+    flex-direction: column;
+    height: auto;
+  }
+  .accordion-item {
+    height: 90px;
+  }
+  .accordion-item.active {
+    height: 400px;
+  }
+  .category-heading {
+    font-size: 28px;
+  }
+  .category-section {
+    padding: 60px 20px 50px;
+  }
+}

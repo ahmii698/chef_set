@@ -8,7 +8,15 @@
 }
 
 .recent-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
   margin-bottom: 2rem;
+}
+
+.recent-header-text {
+  flex: 1;
 }
 
 .recent-label {
@@ -88,11 +96,6 @@
   font-weight: 700;
 }
 
-.recent-cta {
-  text-align: center;
-  margin-top: 2.5rem;
-}
-
 .btn-view-all {
   display: inline-block;
   background: transparent;
@@ -104,6 +107,8 @@
   letter-spacing: 1px;
   border-radius: 6px;
   transition: all 0.3s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .btn-view-all:hover {
@@ -117,6 +122,17 @@
 @media (max-width: 992px) {
   .recent-grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .recent-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .btn-view-all {
+    align-self: flex-start;
   }
 }
 

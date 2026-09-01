@@ -75,7 +75,7 @@ export default function CheckoutFlow({ cartItems = [] }) {
       {step === "placed" && (
         <OrderPlaced
           orderId={orderId}
-          onTrackOrder={() => navigate(`/track-order?id=${orderId}`)}
+          onTrackOrder={() => navigate(`/trackorder?id=${orderId}`)}
           onContinueShopping={() => navigate("/products")}
         />
       )}

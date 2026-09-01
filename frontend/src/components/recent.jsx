@@ -34,8 +34,11 @@ const Recent = () => {
   return (
     <section className="recent-section">
       <div className="recent-header">
-        <span className="recent-label">OUR PREMIUM COLLECTION</span>
-        <h2>EQUIPMENT FOR EVERY <span>KITCHEN.</span></h2>
+        <div className="recent-header-text">
+          <span className="recent-label">OUR PREMIUM COLLECTION</span>
+          <h2>EQUIPMENT FOR EVERY <span>KITCHEN.</span></h2>
+        </div>
+        <Link to="/products" className="btn-view-all">VIEW ALL PRODUCTS</Link>
       </div>
 
       <div className="recent-grid">
@@ -50,10 +53,6 @@ const Recent = () => {
             </div>
           </div>
         ))}
-      </div>
-
-      <div className="recent-cta">
-        <Link to="/products" className="btn-view-all">VIEW ALL PRODUCTS</Link>
       </div>
     </section>
   );

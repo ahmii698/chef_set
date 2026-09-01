@@ -1,5 +1,5 @@
 /* src/components/home/stats.css */
-.stats-section {
+.home-stats-section {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 2rem;
@@ -11,12 +11,12 @@
   margin-bottom: 4rem;
 }
 
-.stat-item {
+.home-stats-section .home-stat-item {
   text-align: center;
   position: relative;
 }
 
-.stat-item:not(:last-child)::after {
+.home-stats-section .home-stat-item:not(:last-child)::after {
   content: '';
   position: absolute;
   right: -1rem;
@@ -27,14 +27,14 @@
   background: #2a2a2a;
 }
 
-.stat-item h3 {
+.home-stats-section .home-stat-item h3 {
   font-size: 3.5rem;
   font-weight: 800;
   margin-bottom: 0.5rem;
   color: #e8a33c;
 }
 
-.stat-item p {
+.home-stats-section .home-stat-item p {
   color: #888;
   font-size: 0.85rem;
   letter-spacing: 2px;
@@ -42,29 +42,29 @@
 }
 
 @media (max-width: 768px) {
-  .stats-section {
+  .home-stats-section {
     grid-template-columns: 1fr 1fr;
     gap: 1.5rem;
     padding: 2rem 1.5rem;
   }
 
-  .stat-item h3 {
+  .home-stats-section .home-stat-item h3 {
     font-size: 2.5rem;
   }
 
-  .stat-item:nth-child(2)::after,
-  .stat-item:last-child::after {
+  .home-stats-section .home-stat-item:nth-child(2)::after,
+  .home-stats-section .home-stat-item:last-child::after {
     display: none;
   }
 }
 
 @media (max-width: 480px) {
-  .stats-section {
+  .home-stats-section {
     grid-template-columns: 1fr;
     gap: 1rem;
   }
 
-  .stat-item::after {
+  .home-stats-section .home-stat-item::after {
     display: none;
   }
 }
