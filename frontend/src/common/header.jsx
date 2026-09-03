@@ -9,6 +9,7 @@ const Header = () => {
   const location = useLocation();
   const [cartCount, setCartCount] = useState(0);
   const [wishlistCount, setWishlistCount] = useState(0);
+  const [hideHeader, setHideHeader] = useState(false);
 
   const updateCounts = () => {
     const cart = getCart();
@@ -35,8 +36,39 @@ const Header = () => {
     updateCounts();
   }, [location.pathname]);
 
+  // Header page ke bilkul top par (scroll = 0) hamesha visible rahega.
+  // Sirf jab user actually scroll karke MouseAnimation section ke ANDAR
+  // ja chuka ho (aur wo section abhi khatam nahi hua) tab header hide hoga.
+  // Jese hi wo section poora scroll ho jaye, header wapas dikh jata hai.
+  useEffect(() => {
+    const handleScroll = () => {
+      const animEl = document.querySelector('.scroll-wrapper');
+
+      if (!animEl) {
+        // Is page par animation hai hi nahi (About, Products, etc.)
+        setHideHeader(false);
+        return;
+      }
+
+      const rect = animEl.getBoundingClientRect();
+      const scrolledIntoPage = window.scrollY > 40; // top pe hamesha dikhega
+      const animationNotFinished = rect.bottom > 10; // section abhi baaki hai
+
+      setHideHeader(scrolledIntoPage && animationNotFinished);
+    };
+
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('resize', handleScroll);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleScroll);
+    };
+  }, [location.pathname]);
+
   return (
-    <header className="header">
+    <header className={`header ${hideHeader ? 'header-hidden' : ''}`}>
       <div className="header-background">
         <div className="header-overlay">
           <div className="header-grid">

@@ -4,7 +4,7 @@ import "./animation.css";
 const categories = [
   {
     title: "Knives",
-    image: "/images/cs1.jpg", // apni image ka path yahan daalein
+    image: "/images/cs1.jpg", 
     link: "/category/knives",
   },
   {
@@ -34,6 +34,7 @@ export default function CategoryAccordion() {
 
   return (
     <section className="category-section">
+      <div className="heading-glow"></div>
       <h2 className="category-heading">Shop by Category</h2>
 
       <div className="accordion-wrapper">
@@ -43,6 +44,7 @@ export default function CategoryAccordion() {
             <div
               key={index}
               className={`accordion-item ${isActive ? "active" : ""}`}
+              onMouseEnter={() => setActiveIndex(index)}
               onClick={() => setActiveIndex(index)}
               style={{ backgroundImage: `url(${item.image})` }}
             >
@@ -58,8 +60,8 @@ export default function CategoryAccordion() {
                 <div className="active-content">
                   <span className="collection-label">COLLECTIONS</span>
                   <h3 className="active-title">{item.title}</h3>
-                  <a href={item.link} className="shop-now">
-                    — SHOP NOW <span className="arrow">↗</span>
+                  <a href={item.link} className="shop-now-btn">
+                    SHOP NOW <span className="arrow">↗</span>
                   </a>
                 </div>
               )}

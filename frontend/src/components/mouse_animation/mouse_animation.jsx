@@ -10,47 +10,135 @@ const mapRange = (value, inMin, inMax, outMin, outMax) => {
   return outMin + t * (outMax - outMin);
 };
 
-const SLICE_PARAMS = [
-  { dx: -260, dy: -110, spin: -200, delay: 0.00, size: 1.05, top: '20%' },
-  { dx: 230,  dy: 130,  spin: 180,  delay: 0.02, size: 0.95, top: '26%' },
-  { dx: -300, dy: -160, spin: -230, delay: 0.05, size: 0.9,  top: '32%' },
-  { dx: 280,  dy: 150,  spin: 210,  delay: 0.03, size: 1.0,  top: '38%' },
-  { dx: -220, dy: -200, spin: -160, delay: 0.07, size: 0.85, top: '44%' },
-  { dx: 260,  dy: 190,  spin: 200,  delay: 0.045,size: 0.92, top: '50%' },
-  { dx: -280, dy: -230, spin: -220, delay: 0.09, size: 0.8,  top: '56%' },
-  { dx: 240,  dy: 220,  spin: 170,  delay: 0.06, size: 0.88, top: '62%' },
-  { dx: -200, dy: -250, spin: -190, delay: 0.11, size: 0.78, top: '68%' },
-  { dx: 300,  dy: 260,  spin: 230,  delay: 0.08, size: 0.83, top: '74%' },
-  { dx: -250, dy: -280, spin: -210, delay: 0.13, size: 0.75, top: '80%' },
-  { dx: 210,  dy: 270,  spin: 190,  delay: 0.10, size: 0.8,  top: '86%' },
-];
+const getContainedRect = (img) => {
+  const cw = img.clientWidth;
+  const ch = img.clientHeight;
+  const nw = img.naturalWidth;
+  const nh = img.naturalHeight;
+  if (!cw || !ch || !nw || !nh) return { left: 0, top: 0, width: cw, height: ch };
 
-const LEAF_PARAMS = [
-  { dx: -130, dy: -170, spin: -160, delay: 0.00, size: 0.95, color: '#1a5c28' },
-  { dx: 110,  dy: -190, spin: 150,  delay: 0.02, size: 0.85, color: '#2d8a3e' },
-  { dx: -160, dy: -110, spin: -140, delay: 0.04, size: 0.8,  color: '#2d8a3e' },
-  { dx: 150,  dy: -140, spin: 170,  delay: 0.03, size: 0.9,  color: '#1a5c28' },
-  { dx: -90,  dy: -220, spin: -120, delay: 0.06, size: 0.72, color: '#1a5c28' },
-  { dx: 100,  dy: -230, spin: 130,  delay: 0.05, size: 0.78, color: '#2d8a3e' },
-];
+  const containerRatio = cw / ch;
+  const imageRatio = nw / nh;
+  let renderWidth, renderHeight;
+  if (imageRatio > containerRatio) {
+    renderWidth = cw;
+    renderHeight = cw / imageRatio;
+  } else {
+    renderHeight = ch;
+    renderWidth = ch * imageRatio;
+  }
+  return {
+    left: (cw - renderWidth) / 2,
+    top: (ch - renderHeight) / 2,
+    width: renderWidth,
+    height: renderHeight,
+  };
+};
 
-const MouseAnimation = () => {
+const MouseAnimation = ({ exploreHref = '/products' }) => {
   const wrapperRef = useRef(null);
-  const headingRef = useRef(null);
   const knifeRef = useRef(null);
-  const wholeCarrotRef = useRef(null);
-  const slicesWrapRef = useRef(null);
-  const leafSlicesWrapRef = useRef(null);
-  const lineTopRef = useRef(null);
-  const lineBottomRef = useRef(null);
   const glowRef = useRef(null);
-  const boardShadowRef = useRef(null);
+  const sheathWrapRef = useRef(null);
+  const sheathImgRef = useRef(null);
+  const sheathGlowRef = useRef(null);
+  const sheathTargetRef = useRef(null);
+  const debugDotRef = useRef(null);
 
   const targetProgress = useRef(0);
   const currentProgress = useRef(0);
   const rafId = useRef(null);
 
+  // Testing ke liye true karo to red dot dikhega — tuning ke baad
+  // wapis false kar dena.
+  const DEBUG_RETRACT = false;
+
+  // Sheath image ke andar (actual visible pixels ke against) target
+  // point — X: left-right, Y: 0 = sheath ka top (opening).
+  const SHEATH_TARGET_X_RATIO = 0.42;
+  const SHEATH_TARGET_Y_RATIO = 0.12;
+
+  // Retract ke end pe knife ki HEIGHT kitni chhoti ho — bohot chhoti
+  // (0.3) to "gayab" jaisi lagti hai, bohot badi (0.8+) to sheath ke
+  // opening se wider ho ke side se poke karti hai.
+  const RETRACT_END_SCALE_Y = 0.55;
+
+  // Retract ke end pe knife ki WIDTH kitni chhoti/badi ho — height se
+  // alag isliye rakha hai taake end pe blade thori chaurhi/thick
+  // dikhe (jaisa maanga gaya tha), height chhoti hi rahe.
+  // 1.0 = original width, isse zyada = width badhegi.
+  const RETRACT_END_SCALE_X = 0.75;
+
+  // Knife ko target se thoda upar/neeche shift karne ke liye (px).
+  // 0 = pure target-point-match. Zaroorat par hi chhote steps (20-30)
+  // mein tune karna, warna blade aur sheath ke beech gap ban jata hai.
+  const HANDLE_PEEK_OFFSET = 0;
+
+  // Knife ko end pe left/right shift karne ke liye (px).
+  // Negative = left, positive = right. Sirf retract phase mein apply
+  // hota hai taake knife sheath ke mid mein aa kar settle ho.
+  // -20 confirm ho chuka hai ke sahi position deta hai.
+  const RETRACT_X_OFFSET = -20;
+
+  const retractTarget = useRef({ dx: 0, dy: 0 });
+
   useEffect(() => {
+    const positionSheathTarget = () => {
+      if (!sheathImgRef.current || !sheathTargetRef.current) return;
+      const img = sheathImgRef.current;
+      if (!img.naturalWidth) return false;
+
+      const rect = getContainedRect(img);
+      sheathTargetRef.current.style.left = `${rect.left + rect.width * SHEATH_TARGET_X_RATIO}px`;
+      sheathTargetRef.current.style.top = `${rect.top + rect.height * SHEATH_TARGET_Y_RATIO}px`;
+      return true;
+    };
+
+    const measureRetractTarget = () => {
+      if (!knifeRef.current || !sheathWrapRef.current || !sheathTargetRef.current) return;
+      positionSheathTarget();
+
+      const knife = knifeRef.current;
+      const sheath = sheathWrapRef.current;
+
+      const knifePrevTransform = knife.style.transform;
+      const knifePrevOpacity = knife.style.opacity;
+      const sheathPrevTransform = sheath.style.transform;
+      const sheathPrevOpacity = sheath.style.opacity;
+
+      knife.style.opacity = '1';
+      knife.style.transform = 'translateX(-50%) translateY(45px) rotate(4deg) scale(1)';
+
+      sheath.style.opacity = '1';
+      sheath.style.transform = 'rotate(-14deg) translateY(0px)';
+
+      void knife.offsetWidth;
+
+      const knifeRect = knife.getBoundingClientRect();
+      const knifeCenterX = knifeRect.left + knifeRect.width / 2;
+      const knifeCenterY = knifeRect.top + knifeRect.height / 2;
+
+      const targetRect = sheathTargetRef.current.getBoundingClientRect();
+      const targetX = targetRect.left + targetRect.width / 2;
+      const targetY = targetRect.top + targetRect.height / 2;
+
+      retractTarget.current = {
+        dx: targetX - knifeCenterX,
+        dy: targetY - knifeCenterY,
+      };
+
+      if (DEBUG_RETRACT && debugDotRef.current) {
+        debugDotRef.current.style.left = `${targetX}px`;
+        debugDotRef.current.style.top = `${targetY}px`;
+        debugDotRef.current.style.display = 'block';
+      }
+
+      knife.style.transform = knifePrevTransform;
+      knife.style.opacity = knifePrevOpacity;
+      sheath.style.transform = sheathPrevTransform;
+      sheath.style.opacity = sheathPrevOpacity;
+    };
+
     const computeProgress = () => {
       if (!wrapperRef.current) return;
       const rect = wrapperRef.current.getBoundingClientRect();
@@ -64,106 +152,54 @@ const MouseAnimation = () => {
     };
 
     const applyStyles = (p) => {
-      // KNIFE — sirf EK descend mapping (p: 0.05 -> 0.30). Uske baad
-      // knife wahi "neeche" position pe permanently reh jaati hai
-      // (koi auto-retract nahi) jab tak p wapas 0.30 se neeche na jaye.
-      // Yani: scroll down pe chaku neeche jaake ruk jaati hai (correct),
-      // aur sirf scroll UP karne pe — jab p 0.30 se kam ho — chaku
-      // wapas upar jaati hai. Chunke pura system p ka pure function hai,
-      // ye reverse pe apne aap sahi order mein hoga: pehle carrot ke
-      // pieces judte hain (p: 1 -> 0.30), phir chaku upar jaati hai
-      // (p: 0.30 -> 0.05).
+      // SEQUENCE:
+      // 1) sheathIn (p 0    -> 0.30): sheath neeche se upar apni jagah tak aata hai + fade in.
+      // 2) fallIn   (p 0.05 -> 0.38): knife upar se gir kar hover position tak aati hai, fade in.
+      // 3) hold     (p 0.38 -> 0.66): halka sa neeche drift, stable/visible rehti hai.
+      // 4) retract  (p 0.66 -> 1.00): knife measured target (sheath ke andar) tak slide
+      //    karti hai, height chhoti ho jati hai lekin width thori chaurhi
+      //    rehti/hoti hai. Ab fade-out NAHI hoti — sirf sheath ke peeche
+      //    chup jati hai jahan overlap hota hai, handle upar dikhta rehta hai.
+
+      if (sheathWrapRef.current) {
+        const sheathIn = smoothstep(mapRange(p, 0, 0.30, 0, 1));
+        const sheathY = lerp(200, 0, sheathIn);
+        sheathWrapRef.current.style.opacity = sheathIn;
+        sheathWrapRef.current.style.transform = `rotate(-14deg) translateY(${sheathY}px)`;
+      }
+
       if (knifeRef.current) {
-        // Phase 1 — quick initial cut descend (upar se cut point tak)
-        const down1 = smoothstep(mapRange(p, 0.05, 0.28, 0, 1));
-        // Phase 2 — continued SLOW drift neeche, poore scatter-range ke
-        // sath overlap karta hua (0.28 -> 0.88). Isse chaku kabhi bhi
-        // "stuck/wait" nahi lagti — wo hamesha thodi thodi move karti
-        // rehti hai jab tak pieces bikharte/judte hain. Chunke ye p ka
-        // pure function hai, reverse scroll pe yehi range chaku ko
-        // carrot ke reassemble hone ke EXACT sath-sath upar le jayega.
-        const down2 = smoothstep(mapRange(p, 0.28, 0.88, 0, 1));
-        const translateY = lerp(-230, 106, down1) + down2 * 42;
-        const rotate = down1 * 20 + down2 * 7;
-        const fadeIn = mapRange(p, 0, 0.08, 0, 1);
+        const fallIn = smoothstep(mapRange(p, 0.05, 0.38, 0, 1));
+        const hold = smoothstep(mapRange(p, 0.38, 0.66, 0, 1));
+        const retract = smoothstep(mapRange(p, 0.66, 1, 0, 1));
+
+        const baseY = lerp(-680, 30, fallIn);
+        const holdDrift = hold * 15;
+        const retractY = retract * retractTarget.current.dy;
+        const handlePeek = retract * HANDLE_PEEK_OFFSET;
+        const translateY = baseY + holdDrift + retractY + handlePeek;
+        const translateX = retract * retractTarget.current.dx + retract * RETRACT_X_OFFSET;
+
+        const holdRotate = lerp(-38, 0, fallIn) + hold * 4;
+        const rotate = lerp(holdRotate, -14, retract);
+
+        const scaleX = lerp(1, RETRACT_END_SCALE_X, retract);
+        const scaleY = lerp(1, RETRACT_END_SCALE_Y, retract);
+
+        const fadeIn = mapRange(p, 0.05, 0.38, 0, 1);
         knifeRef.current.style.opacity = fadeIn;
         knifeRef.current.style.transform =
-          `translateX(-50%) translateY(${translateY}px) rotate(${rotate}deg)`;
+          `translateX(-50%) translateY(${translateY}px) translateX(${translateX}px) rotate(${rotate}deg) scale(${scaleX}, ${scaleY})`;
       }
 
-      // Cutting board contact shadow — knife jab exactly touch kare (p ~0.30) tab punch
-      if (boardShadowRef.current) {
-        const hit = mapRange(p, 0.24, 0.30, 0, 1) * (1 - mapRange(p, 0.34, 0.42, 0, 1));
-        boardShadowRef.current.style.opacity = 0.25 + hit * 0.35;
-        boardShadowRef.current.style.transform = `translateX(-50%) scale(${1 + hit * 0.12})`;
+      if (sheathGlowRef.current) {
+        const glow =
+          mapRange(p, 0.70, 0.85, 0, 1) * (1 - mapRange(p, 0.90, 1, 0, 1));
+        sheathGlowRef.current.style.opacity = glow * 0.75;
       }
 
-      // Whole carrot (realistic image) — page load pe fully visible,
-      // knife jab pohanche (p ~0.30) tab vanish ho jaati hai
-      const appear = mapRange(p, 0, 0.05, 0.92, 1);
-      const vanish = mapRange(p, 0.28, 0.34, 0, 1);
-      const wholeOpacity = appear * (1 - vanish);
-      if (wholeCarrotRef.current) {
-        wholeCarrotRef.current.style.opacity = wholeOpacity;
-        wholeCarrotRef.current.style.transform =
-          `translateY(${(1 - appear) * 30}px) scale(${0.94 + appear * 0.06})`;
-      }
-
-      // Slice flash lines — cut ke exact moment pe flash
-      const flash = mapRange(p, 0.27, 0.31, 0, 1) * (1 - mapRange(p, 0.34, 0.40, 0, 1));
-      if (lineTopRef.current) {
-        lineTopRef.current.style.width = `${40 + flash * 90}px`;
-        lineTopRef.current.style.opacity = flash;
-      }
-      if (lineBottomRef.current) {
-        lineBottomRef.current.style.width = `${40 + flash * 90}px`;
-        lineBottomRef.current.style.opacity = flash;
-      }
-
-      // Carrot slices — knife pohanchne ke baad hi bikharna shuru hote hain,
-      // aur reverse scroll pe yahi range unhe wapas jodta hai (carrot "band" hona)
-      if (slicesWrapRef.current) {
-        const children = slicesWrapRef.current.children;
-        for (let i = 0; i < children.length; i++) {
-          const el = children[i];
-          const cfg = SLICE_PARAMS[i];
-          const raw = mapRange(p, 0.32 + cfg.delay, 0.82 + cfg.delay, 0, 1);
-          const s = smoothstep(raw);
-          const fadeIn = mapRange(p, 0.28 + cfg.delay, 0.34 + cfg.delay, 0, 1);
-          const fadeSoften = mapRange(p, 0.88 + cfg.delay, 1, 1, 0.82);
-          const x = cfg.dx * s;
-          const y = cfg.dy * s;
-          const rot = cfg.spin * s;
-          const scale = cfg.size * (0.65 + s * 0.35);
-          el.style.opacity = fadeIn * fadeSoften;
-          el.style.transform =
-            `translate(${x}px, ${y}px) rotate(${rot}deg) scale(${scale})`;
-        }
-      }
-
-      // Leaf slices — carrot slices se thoda pehle scatter/reassemble hote hain
-      if (leafSlicesWrapRef.current) {
-        const children = leafSlicesWrapRef.current.children;
-        for (let i = 0; i < children.length; i++) {
-          const el = children[i];
-          const cfg = LEAF_PARAMS[i];
-          const raw = mapRange(p, 0.24 + cfg.delay, 0.70 + cfg.delay, 0, 1);
-          const s = smoothstep(raw);
-          const fadeIn = mapRange(p, 0.20 + cfg.delay, 0.26 + cfg.delay, 0, 1);
-          const fadeSoften = mapRange(p, 0.80 + cfg.delay, 1, 1, 0.8);
-          const x = cfg.dx * s;
-          const y = cfg.dy * s;
-          const rot = cfg.spin * s;
-          const scale = cfg.size * (0.6 + s * 0.4);
-          el.style.opacity = fadeIn * fadeSoften;
-          el.style.transform =
-            `translate(${x}px, ${y}px) rotate(${rot}deg) scale(${scale})`;
-        }
-      }
-
-      // Ambient glow warmth
       if (glowRef.current) {
-        const t = mapRange(p, 0, 0.6, 0.06, 0.24);
+        const t = mapRange(p, 0, 0.6, 0.05, 0.24);
         glowRef.current.style.opacity = t;
       }
     };
@@ -175,9 +211,25 @@ const MouseAnimation = () => {
     };
 
     const onScroll = () => computeProgress();
-    const onResize = () => computeProgress();
+    const onResize = () => {
+      measureRetractTarget();
+      computeProgress();
+    };
 
+    // Image load hone ka wait karo (naturalWidth chahiye hota hai
+    // getContainedRect ke liye), warna measurement galat aayega.
+    const tryMeasure = () => {
+      const ok = positionSheathTarget();
+      if (ok) {
+        measureRetractTarget();
+      } else {
+        requestAnimationFrame(tryMeasure);
+      }
+    };
+
+    tryMeasure();
     computeProgress();
+    applyStyles(currentProgress.current);
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onResize);
     rafId.current = requestAnimationFrame(tick);
@@ -195,84 +247,108 @@ const MouseAnimation = () => {
         <div className="ambient-glow" ref={glowRef}></div>
 
         <div className="content-row">
-          <div className="animation-heading" ref={headingRef}>
+          <div className="animation-heading">
             <p className="eyebrow">CRAFTED FOR THE KITCHEN</p>
-            <h2>Precision in Every Cut.</h2>
+
+            <div className="eyebrow-divider">
+              <span className="divider-line"></span>
+              <span className="divider-dot"></span>
+              <span className="divider-line"></span>
+            </div>
+
+            <h2>
+              Precision in
+              <br />
+              <span className="accent-italic">Every Cut.</span>
+            </h2>
+
             <p className="heading-subtitle">
-              Premium tools for chefs who value perfection.
+              High quality tools designed for chefs who demand the best.
+              Built for performance, crafted for perfection.
             </p>
+
+            <div className="feature-grid">
+              <div className="feature-item">
+                <svg className="feature-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 2L4 5v6c0 5 3.4 8.5 8 10 4.6-1.5 8-5 8-10V5l-8-3z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
+                  <path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                <h4>Premium Quality</h4>
+                <p>Made from superior materials for long lasting use.</p>
+              </div>
+
+              <div className="feature-item">
+                <svg className="feature-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M4 20L15 9" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+                  <path d="M13 5l6 6-2.2 2.2c-2.4 2.4-4.8 1.6-6-.4L13 5z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
+                  <path d="M4 20l2.4-.6.6-2.4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                <h4>Sharp. Durable. Reliable.</h4>
+                <p>Engineered for precision and built to stay sharp longer.</p>
+              </div>
+
+              <div className="feature-item">
+                <svg className="feature-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M7 21h10M9 21v-5h6v5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M6 9a3 3 0 013-3.4 3 3 0 015.9-.7A3 3 0 0118 9c0 3.3-2.2 5.8-6 6-3.8-.2-6-2.7-6-6z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
+                </svg>
+                <h4>Chef Approved</h4>
+                <p>Trusted by professionals in kitchens around the world.</p>
+              </div>
+
+              <div className="feature-item">
+                <svg className="feature-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8L12 3z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
+                  <path d="M19 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8.8-2z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" />
+                </svg>
+                <h4>Elegant Design</h4>
+                <p>Perfect balance of performance and style.</p>
+              </div>
+            </div>
+
+            <a className="explore-btn" href={exploreHref}>
+              EXPLORE COLLECTION <span className="btn-arrow">→</span>
+            </a>
           </div>
 
-          <div className="carrot-stage">
-            <div className="board-shadow" ref={boardShadowRef}></div>
+          <div className="knife-stage">
+            <div className="sheath-wrap" ref={sheathWrapRef}>
+              <div className="sheath-glow" ref={sheathGlowRef}></div>
+              <img
+                src="/images/sheath.png"
+                alt="Sheath"
+                className="sheath-svg"
+                ref={sheathImgRef}
+              />
+              <div className="sheath-target" ref={sheathTargetRef}></div>
+            </div>
 
             <img
+              src="/images/animate.png"
+              alt="Knife"
               className="knife-svg"
               ref={knifeRef}
-              src="/images/animate.png"
-              alt="Chef's knife"
             />
-
-            <div className="whole-carrot" ref={wholeCarrotRef}>
-              <img className="carrot-real-img" src="/images/carrottt.png" alt="Fresh carrot" />
-              <div className="slice-line line-top" ref={lineTopRef}></div>
-              <div className="slice-line line-bottom" ref={lineBottomRef}></div>
-            </div>
-
-            <div className="carrot-slices-wrap" ref={slicesWrapRef}>
-              {SLICE_PARAMS.map((cfg, i) => (
-                <svg
-                  key={i}
-                  className="carrot-slice"
-                  style={{ top: cfg.top }}
-                  viewBox="0 0 60 60"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <defs>
-                    <radialGradient id={`sliceOuter${i}`} cx="42%" cy="38%" r="65%">
-                      <stop offset="0%" stopColor="#ff9a5e" />
-                      <stop offset="60%" stopColor="#f1651f" />
-                      <stop offset="100%" stopColor="#c1440c" />
-                    </radialGradient>
-                    <radialGradient id={`sliceInner${i}`} cx="42%" cy="38%" r="65%">
-                      <stop offset="0%" stopColor="#ffd9ad" />
-                      <stop offset="70%" stopColor="#ffb578" />
-                      <stop offset="100%" stopColor="#f0854a" />
-                    </radialGradient>
-                  </defs>
-                  <circle cx="30" cy="30" r="28" fill={`url(#sliceOuter${i})`} stroke="#a83a0c" strokeWidth="0.8" />
-                  <circle cx="30" cy="30" r="19" fill={`url(#sliceInner${i})`} />
-                  <circle cx="30" cy="30" r="19" fill="none" stroke="#e0834a" strokeWidth="0.6" opacity="0.6" />
-                  <circle cx="30" cy="30" r="11" fill="none" stroke="#e0834a" strokeWidth="0.5" opacity="0.5" />
-                  <circle cx="30" cy="30" r="4.5" fill="#8a4420" opacity="0.55" />
-                </svg>
-              ))}
-            </div>
-
-            <div className="leaf-slices-wrap" ref={leafSlicesWrapRef}>
-              {LEAF_PARAMS.map((cfg, i) => (
-                <svg
-                  key={i}
-                  className="leaf-slice"
-                  viewBox="0 0 30 34"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M15 34 C4 24, 6 8, 15 0 C20 10, 19 24, 15 34 Z"
-                    fill={cfg.color}
-                  />
-                  <path
-                    d="M15 2 L15 30"
-                    stroke="#0d3a17"
-                    strokeWidth="0.8"
-                    opacity="0.5"
-                  />
-                </svg>
-              ))}
-            </div>
           </div>
         </div>
       </div>
+
+      {DEBUG_RETRACT && (
+        <div
+          ref={debugDotRef}
+          style={{
+            position: 'fixed',
+            width: 10,
+            height: 10,
+            background: 'red',
+            borderRadius: '50%',
+            transform: 'translate(-50%, -50%)',
+            zIndex: 9999,
+            display: 'none',
+            pointerEvents: 'none',
+          }}
+        />
+      )}
     </div>
   );
 };

@@ -6,6 +6,7 @@ import './App.css';
 // Common Components
 import Header from './common/header';
 import Footer from './common/footer';
+import ScrollToTop from './components/ScrollToTop';
 
 // Page Components
 import Home from './components/home';
@@ -23,6 +24,7 @@ import TrackOrder from './components/checkout/trackorder';
 function App() {
   return (
     <Router>
+      <ScrollToTop />
       <div className="app">
         <Header />
         <main className="main-content">

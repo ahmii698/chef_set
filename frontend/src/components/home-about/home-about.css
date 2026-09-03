@@ -1,0 +1,70 @@
+/* src/components/home-about/home-about.css */
+.home-about {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 3rem 1rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  align-items: center;
+}
+
+.home-about-text h2 {
+  color: #ffffff;
+  font-size: 2.6rem;
+  font-weight: 800;
+  margin-bottom: 1.6rem;
+  letter-spacing: 0.5px;
+  line-height: 1.3;
+}
+
+.home-about-eyebrow {
+  display: block;
+  color: #e8a33c;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  margin-bottom: 1rem;
+}
+
+.home-about-text p {
+  color: #aaaaaa;
+  font-size: 1.05rem;
+  line-height: 2;
+  margin-bottom: 1.4rem;
+}
+
+.home-about-image {
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid #2a2a2a;
+  height: 480px;
+}
+
+.home-about-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .home-about {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+  .home-about-image {
+    order: -1;
+    height: 320px;
+  }
+}
+
+@media (max-width: 480px) {
+  .home-about-text h2 {
+    font-size: 1.8rem;
+  }
+  .home-about-text p {
+    font-size: 0.95rem;
+  }
+}

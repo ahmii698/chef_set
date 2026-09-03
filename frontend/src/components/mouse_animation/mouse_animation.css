@@ -3,7 +3,7 @@
 
 .scroll-wrapper {
   position: relative;
-  height: 430vh; /* zyada height = zyada scroll chahiye = slower, smoother feel */
+  height: 430vh;
 }
 .sticky-stage {
   position: sticky;
@@ -13,35 +13,35 @@
   background: #0a0a0a;
   overflow: hidden;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
+  padding-top: 90px;
 }
 .ambient-glow {
   position: absolute;
   inset: 0;
   pointer-events: none;
   background: radial-gradient(520px circle at 50% 55%, rgba(232, 163, 60, 0.35), transparent 70%);
-  opacity: 0.06;
+  opacity: 0.05;
 }
 
-/* Row layout — text left, carrot stage right (matches reference design) */
 .content-row {
   position: relative;
   z-index: 2;
   width: 100%;
-  max-width: 1200px;
+  max-width: 1280px;
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: space-between;
   gap: 40px;
   padding: 0 6%;
 }
 
-/* Heading block — left side, static in flex flow, hamesha visible */
 .animation-heading {
   flex: 0 0 auto;
-  width: 42%;
-  min-width: 280px;
+  width: 56%;
+  min-width: 320px;
+  max-width: 620px;
   text-align: left;
   color: #fff;
   opacity: 1;
@@ -51,8 +51,28 @@
   font-size: 0.75rem;
   letter-spacing: 4px;
   font-weight: 600;
-  margin-bottom: 0.9rem;
+  margin: 0 0 0.9rem;
 }
+
+.eyebrow-divider {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 1.4rem;
+}
+.eyebrow-divider .divider-line {
+  width: 42px;
+  height: 1px;
+  background: rgba(232, 163, 60, 0.55);
+}
+.eyebrow-divider .divider-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #e8a33c;
+  flex-shrink: 0;
+}
+
 .animation-heading h2 {
   font-family: 'Playfair Display', Georgia, serif;
   font-style: italic;
@@ -62,162 +82,201 @@
   color: #f5f0e8;
   margin: 0 0 1.1rem;
 }
+.animation-heading h2 .accent-italic {
+  color: #e8a33c;
+}
+
 .heading-subtitle {
   color: #a8a8a8;
   font-size: 1rem;
   line-height: 1.6;
-  max-width: 380px;
+  max-width: 420px;
+  margin: 0 0 2.2rem;
+}
+
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0 18px;
+  margin-bottom: 2.4rem;
+}
+.feature-item {
+  padding-left: 16px;
+  border-left: 1px solid rgba(255, 255, 255, 0.12);
+}
+.feature-item:first-child {
+  padding-left: 0;
+  border-left: none;
+}
+.feature-icon {
+  width: 26px;
+  height: 26px;
+  color: #e8a33c;
+  margin-bottom: 12px;
+  display: block;
+}
+.feature-item h4 {
+  color: #f5f0e8;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin: 0 0 6px;
+  line-height: 1.3;
+}
+.feature-item p {
+  color: #8a8a8a;
+  font-size: 0.78rem;
+  line-height: 1.5;
   margin: 0;
 }
 
-/* Carrot stage — self-contained box on the right, everything inside is
-   positioned relative to THIS wrapper, so it can never overflow the page */
-.carrot-stage {
+.explore-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 30px;
+  background: transparent;
+  border: 1.5px solid #e8a33c;
+  color: #e8a33c;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: background 0.25s ease, color 0.25s ease;
+}
+.explore-btn:hover {
+  background: #e8a33c;
+  color: #0a0a0a;
+}
+.explore-btn .btn-arrow {
+  transition: transform 0.25s ease;
+}
+.explore-btn:hover .btn-arrow {
+  transform: translateX(4px);
+}
+
+/* Knife stage — self-contained box on the right */
+.knife-stage {
   position: relative;
   flex: 0 0 auto;
-  width: 46%;
-  max-width: 480px;
+  width: 40%;
+  max-width: 440px;
   height: 480px;
+  transform: translateY(340px);
 }
 
-/* Cutting board contact shadow */
-.board-shadow {
+/* Sheath — size badhaya gaya hai (130x400 -> 170x480) */
+.sheath-wrap {
+  position: absolute;
+  top: -230px;
+  right: 3%;
+  width: 170px;
+  height: 480px;
+  transform: rotate(-14deg);
+  transform-origin: top center;
+  z-index: 5;
+  filter: drop-shadow(0 14px 22px rgba(0, 0, 0, 0.5));
+  pointer-events: none;
+  opacity: 0;
+  will-change: transform, opacity;
+}
+.sheath-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+}
+.sheath-glow {
   position: absolute;
   left: 50%;
-  top: 62%;
-  width: 220px;
-  height: 38px;
-  transform: translateX(-50%);
-  background: radial-gradient(closest-side, rgba(0, 0, 0, 0.55), transparent 75%);
-  opacity: 0.25;
-  filter: blur(2px);
-  z-index: 1;
+  top: 8%;
+  width: 60px;
+  height: 60px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(232, 163, 60, 0.95), transparent 70%);
+  opacity: 0;
+  filter: blur(6px);
 }
 
-/* Knife — image (public/images/animationnn.png), size increased */
+/* Target point inside the sheath — left/top ab JS (positionSheathTarget)
+   se inline set hote hain, actual sheath image ke naturalWidth/Height
+   ke against, isliye yahan hardcode nahi karna. */
+.sheath-target {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
+}
+
+/* Knife */
 .knife-svg {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 175px;
-  height: 383px;
-  margin-top: -415px;
-  object-fit: contain;
+  width: 210px;
+  height: 460px;
+  margin-top: -640px;
   filter: drop-shadow(0 16px 28px rgba(0, 0, 0, 0.6));
   will-change: transform, opacity;
   z-index: 4;
   opacity: 0;
-}
-
-/* Whole carrot — realistic image, contained within .carrot-stage */
-.whole-carrot {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 460px;
-  height: 330px;
-  margin-left: -230px;
-  margin-top: -185px;
-  z-index: 2;
-  will-change: transform, opacity;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.carrot-real-img {
-  width: 100%;
-  height: 100%;
   object-fit: contain;
-  filter: drop-shadow(0 18px 30px rgba(0, 0, 0, 0.55));
 }
 
-/* Slice flash lines */
-.slice-line {
-  position: absolute;
-  left: 50%;
-  top: 48%;
-  height: 3px;
-  width: 0;
-  background: linear-gradient(90deg, transparent, #fff, #e8a33c, transparent);
-  box-shadow: 0 0 18px rgba(232, 163, 60, 0.7);
-  transform: translate(-50%, -50%) rotate(-18deg);
-  opacity: 0;
-}
-.line-bottom {
-  top: 56%;
-  transform: translate(-50%, -50%) rotate(-8deg);
-}
-
-/* Sliced carrot pieces */
-.carrot-slices-wrap {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 1px;
-  height: 1px;
-  z-index: 2;
-}
-.carrot-slice {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 54px;
-  height: 54px;
-  margin-left: -27px;
-  margin-top: -27px;
-  opacity: 0;
-  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.45));
-  will-change: transform, opacity;
-}
-
-/* Sliced green leaf pieces */
-.leaf-slices-wrap {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 1px;
-  height: 1px;
-  margin-top: -95px;
-  margin-left: 75px;
-  z-index: 3;
-}
-.leaf-slice {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 30px;
-  height: 34px;
-  margin-left: -15px;
-  margin-top: -17px;
-  opacity: 0;
-  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.4));
-  will-change: transform, opacity;
+@media (max-width: 1050px) {
+  .animation-heading { width: 52%; }
+  .animation-heading h2 { font-size: 2.6rem; }
 }
 
 @media (max-width: 900px) {
   .content-row {
     flex-direction: column;
     justify-content: center;
-    gap: 24px;
+    align-items: center;
+    gap: 28px;
     padding: 0 6%;
   }
   .animation-heading {
     width: 100%;
+    max-width: 520px;
     text-align: center;
   }
-  .heading-subtitle { margin: 0 auto; }
-  .carrot-stage {
+  .eyebrow-divider { justify-content: center; }
+  .heading-subtitle { margin-left: auto; margin-right: auto; }
+  .feature-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px 18px;
+    text-align: left;
+  }
+  .feature-item:nth-child(2) { border-left: 1px solid rgba(255, 255, 255, 0.12); padding-left: 16px; }
+  .feature-item:nth-child(odd) { padding-left: 0; border-left: none; }
+  .explore-btn { margin: 0 auto; }
+  .knife-stage {
     width: 100%;
     max-width: 340px;
     height: 340px;
+    transform: translateY(0);
   }
+  .sheath-wrap { top: -100px; right: 6%; width: 120px; height: 360px; }
+  .knife-svg { width: 150px; height: 340px; margin-top: -480px; }
+}
+
+@media (max-width: 600px) {
+  .feature-grid {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+  .feature-item {
+    padding-left: 0;
+    border-left: none;
+    padding-top: 14px;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+  }
+  .feature-item:first-child { border-top: none; padding-top: 0; }
 }
 
 @media (max-width: 768px) {
   .animation-heading h2 { font-size: 2rem; }
-  .knife-svg { width: 126px; height: 275px; margin-top: -300px; }
-  .whole-carrot { width: 300px; height: 214px; margin-left: -150px; margin-top: -120px; }
-  .carrot-slice { width: 40px; height: 40px; margin-left: -20px; margin-top: -20px; }
-  .leaf-slice { width: 22px; height: 25px; margin-left: -11px; margin-top: -12px; }
-  .leaf-slices-wrap { margin-top: -60px; margin-left: 45px; }
+  .knife-svg { width: 130px; height: 300px; margin-top: -440px; }
+  .sheath-wrap { top: -70px; right: 5%; width: 96px; height: 290px; }
 }
