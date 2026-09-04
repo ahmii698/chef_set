@@ -27,7 +27,7 @@ import ForgotPassword from './components/login/forgotpass';
 import AdminLogin from './admin/pages/login';
 import AdminForgotPassword from './admin/pages/forgot';
 import AdminCreateAccount from './admin/pages/create_account';
-import AdminDashboard from './admin/pages/dashboard';
+import AdminDashboard from './admin/pages/Dashboard';
 import AdminProducts from './admin/pages/Products';
 import AdminOrders from './admin/pages/Orders';
 import AdminCustomers from './admin/pages/Customers';
