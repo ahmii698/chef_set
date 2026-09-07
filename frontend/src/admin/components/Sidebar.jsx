@@ -11,7 +11,7 @@ import {
   Info,
   LogOut,
 } from "lucide-react";
-import "./sidebar.css";
+import "./Sidebar.css";
 
 const menuItems = [
   { name: "Dashboard", icon: LayoutDashboard, path: "/admin/dashboard" },

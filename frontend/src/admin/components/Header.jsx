@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { Search, Bell, ChevronDown, UserCircle, Menu } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import "./header.css";
+import "./Header.css";
 
 const Header = ({ 
   onToggleSidebar, 
