@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
-import "./products.css";
+import "./Products.css";
 
 const CATEGORIES = ["Cookware", "Knives", "Utensils", "Accessories", "Bakeware"];
 

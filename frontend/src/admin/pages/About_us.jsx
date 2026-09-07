@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
-import "./about_us.css";
+import "./About_us.css";
 
 const iconOptions = {
   Award: Award,

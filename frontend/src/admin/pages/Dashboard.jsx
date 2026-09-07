@@ -19,7 +19,7 @@ import {
 } from "recharts";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
-import "./dashboard.css";
+import "./Dashboard.css";
 
 // ---------- Dummy Data (replace with API data later) ----------
 const statCards = [

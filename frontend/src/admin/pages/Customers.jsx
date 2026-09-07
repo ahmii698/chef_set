@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
-import "./customers.css";
+import "./Customers.css";
 
 // ---------------- Dummy Data ----------------
 const customersData = [
