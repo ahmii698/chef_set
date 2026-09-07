@@ -26,12 +26,14 @@
   min-width: 0;
 }
 
-.faq-content {
+.admin-faq-content {
   flex: 1;
   padding: 24px 32px 24px 0;
   background: #17171c;
   overflow-y: auto;
   overflow-x: hidden;
+  max-width: none;
+  margin: 0;
 }
 
 /* ===== HEADER ===== */
@@ -457,7 +459,7 @@
 }
 
 @media (max-width: 768px) {
-  .faq-content {
+  .admin-faq-content {
     padding: 16px 16px 16px 0;
   }
   .stats-grid {

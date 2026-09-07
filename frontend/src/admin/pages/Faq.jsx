@@ -102,7 +102,7 @@ const FAQ = () => {
       <div className="faq-main">
         <Header onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
 
-        <div className="faq-content">
+        <div className="admin-faq-content">
           {/* Header */}
           <div className="faq-header">
             <div>

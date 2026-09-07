@@ -24,7 +24,7 @@ import CreateAccount from './components/login/create_account';
 import ForgotPassword from './components/login/forgotpass';
 
 // Admin Pages
-import AdminLogin from './admin/pages/login';
+import AdminLogin from './admin/pages/Login';
 import AdminForgotPassword from './admin/pages/forgot';
 import AdminCreateAccount from './admin/pages/create_account';
 import AdminDashboard from './admin/pages/Dashboard';
