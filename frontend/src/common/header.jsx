@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { getCart } from '../utils/cart';
 import { getWishlist } from '../utils/wishlist';
+import { API_URL, STORAGE_URL } from '../../config';
 import './header.css';
 
 const Header = () => {
@@ -10,7 +11,28 @@ const Header = () => {
   const [cartCount, setCartCount] = useState(0);
   const [wishlistCount, setWishlistCount] = useState(0);
   const [hideHeader, setHideHeader] = useState(false);
+  
+  // ✅ Navbar state
+  const [navbar, setNavbar] = useState(null);
+  const [loading, setLoading] = useState(true);
 
+  // ===== FETCH NAVBAR DATA =====
+  useEffect(() => {
+    const fetchNavbar = async () => {
+      try {
+        const response = await fetch(`${API_URL}/navbar`);
+        const data = await response.json();
+        setNavbar(data);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching navbar:', error);
+        setLoading(false);
+      }
+    };
+    fetchNavbar();
+  }, []);
+
+  // ===== CART & WISHLIST COUNTS =====
   const updateCounts = () => {
     const cart = getCart();
     const totalQty = cart.reduce((sum, item) => sum + (item.qty || 1), 0);
@@ -36,23 +58,19 @@ const Header = () => {
     updateCounts();
   }, [location.pathname]);
 
-  // Header page ke bilkul top par (scroll = 0) hamesha visible rahega.
-  // Sirf jab user actually scroll karke MouseAnimation section ke ANDAR
-  // ja chuka ho (aur wo section abhi khatam nahi hua) tab header hide hoga.
-  // Jese hi wo section poora scroll ho jaye, header wapas dikh jata hai.
+  // ===== HEADER HIDE/SCROLL LOGIC =====
   useEffect(() => {
     const handleScroll = () => {
       const animEl = document.querySelector('.scroll-wrapper');
 
       if (!animEl) {
-        // Is page par animation hai hi nahi (About, Products, etc.)
         setHideHeader(false);
         return;
       }
 
       const rect = animEl.getBoundingClientRect();
-      const scrolledIntoPage = window.scrollY > 40; // top pe hamesha dikhega
-      const animationNotFinished = rect.bottom > 10; // section abhi baaki hai
+      const scrolledIntoPage = window.scrollY > 40;
+      const animationNotFinished = rect.bottom > 10;
 
       setHideHeader(scrolledIntoPage && animationNotFinished);
     };
@@ -67,54 +85,95 @@ const Header = () => {
     };
   }, [location.pathname]);
 
+  // ===== LOADING STATE =====
+  if (loading) {
+    return (
+      <header className="header">
+        <div className="header-background">
+          <div className="header-overlay">
+            <div className="header-grid">
+              <div className="logo-section">
+                <h1>CHEF<span className="logo-accent">SET</span></h1>
+                <span className="tagline">Loading...</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+    );
+  }
+
+  // ===== DEFAULT DATA (AGAR API SE NA AAYE TOH) =====
+  const defaultMenuItems = [
+    { name: 'HOME', link: '/', order: 1 },
+    { name: 'ABOUT', link: '/about', order: 2 },
+    { name: 'SHOP', link: '/products', order: 3 },
+    { name: 'FAQ', link: '/faq', order: 4 },
+    { name: 'CONTACT', link: '/contact', order: 5 }
+  ];
+
+  const menuItems = navbar?.menuItems?.length > 0 
+    ? [...navbar.menuItems].sort((a, b) => a.order - b.order)
+    : defaultMenuItems;
+
+  const brandText = navbar?.brandText || 'CHEFSET';
+  const tagline = navbar?.tagline || 'Built for the Serious Chef';
+  const trackOrderText = navbar?.trackOrderText || 'TRACK ORDER';
+  const searchPlaceholder = navbar?.searchPlaceholder || 'Search for premium kitchen equipment...';
+  const logo = navbar?.logo || '';
+
   return (
     <header className={`header ${hideHeader ? 'header-hidden' : ''}`}>
       <div className="header-background">
         <div className="header-overlay">
           <div className="header-grid">
-            {/* Logo Section */}
+            {/* ===== LOGO SECTION ===== */}
             <div className="logo-section">
-              <h1>CHEF<span className="logo-accent">SET</span></h1>
-              <span className="tagline">Built for the Serious Chef</span>
+              {logo ? (
+                <Link to="/" className="logo-link">
+                  <img 
+                    src={`${STORAGE_URL}/${logo}`} 
+                    alt={brandText}
+                    className="header-logo"
+                  />
+                </Link>
+              ) : (
+                <Link to="/" className="logo-link">
+                  <h1>
+                    {brandText.split('SET')[0]}
+                    <span className="logo-accent">SET</span>
+                  </h1>
+                  <span className="tagline">{tagline}</span>
+                </Link>
+              )}
             </div>
 
-            {/* Navigation */}
+            {/* ===== NAVIGATION ===== */}
             <nav className="navbar">
               <ul className="nav-links">
+                {menuItems.map((item) => (
+                  <li key={item.name}>
+                    <Link 
+                      to={item.link} 
+                      className={`nav-link ${location.pathname === item.link ? 'active' : ''}`}
+                    >
+                      {item.name}
+                    </Link>
+                  </li>
+                ))}
+                {/* Track Order - Dynamic */}
                 <li>
-                  <Link to="/" className={`nav-link ${location.pathname === '/' ? 'active' : ''}`}>
-                    HOME
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/about" className={`nav-link ${location.pathname === '/about' ? 'active' : ''}`}>
-                    ABOUT
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/products" className={`nav-link ${location.pathname === '/products' ? 'active' : ''}`}>
-                    SHOP
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/faq" className={`nav-link ${location.pathname === '/faq' ? 'active' : ''}`}>
-                    FAQ
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/contact" className={`nav-link ${location.pathname === '/contact' ? 'active' : ''}`}>
-                    CONTACT
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/trackorder" className={`nav-link ${location.pathname === '/trackorder' ? 'active' : ''}`}>
-                    TRACK ORDER
+                  <Link 
+                    to="/trackorder" 
+                    className={`nav-link ${location.pathname === '/trackorder' ? 'active' : ''}`}
+                  >
+                    {trackOrderText}
                   </Link>
                 </li>
               </ul>
             </nav>
 
-            {/* Icons + Search Section */}
+            {/* ===== RIGHT SECTION ===== */}
             <div className="right-section">
               <div className="top-row">
                 {/* Search Bar */}
@@ -123,7 +182,7 @@ const Header = () => {
                     <input
                       type="text"
                       className="search-input"
-                      placeholder="Search for premium kitchen equipment..."
+                      placeholder={searchPlaceholder}
                     />
                     <button className="search-button">
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

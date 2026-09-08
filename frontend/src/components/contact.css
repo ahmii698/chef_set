@@ -1,4 +1,15 @@
 /* src/components/contact.css */
+
+/* ===== LOADING ===== */
+.contact-loading {
+  min-height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #e8a33c;
+  font-size: 1.5rem;
+}
+
 /* ===== CONTACT PAGE WRAPPER ===== */
 .contact-page-wrapper {
   max-width: 1300px;
@@ -84,6 +95,15 @@
   font-size: 0.95rem;
   margin: 0;
   line-height: 1.5;
+}
+
+.contact-page-link {
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.contact-page-link:hover {
+  color: #e8a33c;
 }
 
 /* ===== RIGHT PANEL ===== */
@@ -196,11 +216,65 @@
   cursor: pointer;
   transition: all 0.3s ease;
   margin-top: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
 }
 
 .contact-page-btn:hover {
   background: #f0b458;
   transform: translateY(-2px);
+}
+
+/* ✅ BUTTON DISABLED */
+.contact-page-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* ===== SUBMIT STATUS ===== */
+.contact-submit-status {
+  padding: 0.8rem 1rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  margin-bottom: 1.2rem;
+  text-align: center;
+  animation: fadeIn 0.3s ease;
+}
+
+.contact-submit-status.success {
+  color: #4caf50;
+  background: rgba(76, 175, 80, 0.1);
+  border: 1px solid #4caf50;
+}
+
+.contact-submit-status.error {
+  color: #f44336;
+  background: rgba(244, 67, 54, 0.1);
+  border: 1px solid #f44336;
+}
+
+/* ===== SPINNER ===== */
+.contact-spinner {
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ===== TRUST BADGE ===== */

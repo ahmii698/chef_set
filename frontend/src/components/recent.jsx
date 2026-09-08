@@ -1,55 +1,81 @@
 // src/component/recent.jsx
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { API_URL, STORAGE_URL } from '../../config';
 import './recent.css';
 
-const recentProducts = [
-  {
-    id: 1,
-    name: 'Professional Chef Knife',
-    price: 'PKR 8,500',
-    image: '/images/cs1.jpg',
-  },
-  {
-    id: 2,
-    name: 'Stainless Steel Cookware',
-    price: 'PKR 24,000',
-    image: '/images/cs2.jpg',
-  },
-  {
-    id: 3,
-    name: 'Cast Iron Grill Pan',
-    price: 'PKR 6,900',
-    image: '/images/cs3.jpg',
-  },
-  {
-    id: 4,
-    name: 'Professional Mixing Bowl',
-    price: 'PKR 3,200',
-    image: '/images/cs4.jpg',
-  },
-];
-
 const Recent = () => {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch(`${API_URL}/home-product`);
+        const result = await response.json();
+        setData(result);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching products:', error);
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  if (loading) {
+    return (
+      <section className="recent-section">
+        <div className="recent-header">
+          <div className="recent-header-text">
+            <span className="recent-label">OUR PREMIUM COLLECTION</span>
+            <h2>EQUIPMENT FOR EVERY <span>KITCHEN.</span></h2>
+          </div>
+          <Link to="/products" className="btn-view-all">VIEW ALL PRODUCTS</Link>
+        </div>
+        <div className="recent-grid">
+          {[1, 2, 3, 4].map((i) => (
+            <div className="recent-card" key={i}>
+              <div className="recent-image-wrap">
+                <div className="recent-skeleton"></div>
+              </div>
+              <div className="recent-info">
+                <div className="recent-skeleton-text"></div>
+                <div className="recent-skeleton-price"></div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+    );
+  }
+
+  if (!data) return null;
+
+  const products = [...data.products].sort((a, b) => a.order - b.order);
+
   return (
     <section className="recent-section">
       <div className="recent-header">
         <div className="recent-header-text">
-          <span className="recent-label">OUR PREMIUM COLLECTION</span>
-          <h2>EQUIPMENT FOR EVERY <span>KITCHEN.</span></h2>
+          <span className="recent-label">{data.title}</span>
+          <h2>{data.subtitle}</h2>
         </div>
         <Link to="/products" className="btn-view-all">VIEW ALL PRODUCTS</Link>
       </div>
 
       <div className="recent-grid">
-        {recentProducts.map((product) => (
-          <div className="recent-card" key={product.id}>
+        {products.map((product) => (
+          <div className="recent-card" key={product._id || product.order}>
             <div className="recent-image-wrap">
-              <img src={product.image} alt={product.name} />
+              <img 
+                src={`${STORAGE_URL}/${product.image}`} 
+                alt={product.name} 
+              />
             </div>
             <div className="recent-info">
               <h3>{product.name}</h3>
-              <p className="recent-price">{product.price}</p>
+              <p className="recent-price">PKR {product.price.toLocaleString()}</p>
             </div>
           </div>
         ))}

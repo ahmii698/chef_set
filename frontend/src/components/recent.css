@@ -1,4 +1,5 @@
 /* src/component/recent.css */
+
 .recent-section {
   background-color: #0a0a0a;
   padding: 3.5rem 2rem;
@@ -109,6 +110,7 @@
   transition: all 0.3s ease;
   white-space: nowrap;
   flex-shrink: 0;
+  text-decoration: none;
 }
 
 .btn-view-all:hover {
@@ -118,7 +120,42 @@
   transform: translateY(-3px);
 }
 
-/* Responsive */
+/* ===== SKELETON LOADING ===== */
+.recent-skeleton {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+.recent-skeleton-text {
+  width: 80%;
+  height: 16px;
+  background: #1a1a1a;
+  border-radius: 4px;
+  margin-bottom: 8px;
+  animation: shimmer 1.5s infinite;
+}
+
+.recent-skeleton-price {
+  width: 50%;
+  height: 14px;
+  background: #1a1a1a;
+  border-radius: 4px;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* ===== RESPONSIVE ===== */
 @media (max-width: 992px) {
   .recent-grid {
     grid-template-columns: repeat(2, 1fr);
@@ -126,6 +163,10 @@
 }
 
 @media (max-width: 768px) {
+  .recent-section {
+    padding: 2.5rem 1.2rem;
+  }
+
   .recent-header {
     flex-direction: column;
     align-items: flex-start;
@@ -133,19 +174,34 @@
 
   .btn-view-all {
     align-self: flex-start;
+    padding: 0.6rem 1.5rem;
+    font-size: 0.75rem;
+  }
+
+  .recent-header h2 {
+    font-size: 1.6rem;
   }
 }
 
 @media (max-width: 480px) {
-  .recent-grid {
-    grid-template-columns: 1fr;
+  .recent-section {
+    padding: 2rem 1rem;
   }
 
-  .recent-section {
-    padding: 2rem 1.2rem;
+  .recent-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
   }
 
   .recent-header h2 {
-    font-size: 1.5rem;
+    font-size: 1.3rem;
+  }
+
+  .recent-info h3 {
+    font-size: 0.85rem;
+  }
+
+  .recent-price {
+    font-size: 0.85rem;
   }
 }

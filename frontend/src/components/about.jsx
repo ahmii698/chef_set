@@ -1,5 +1,5 @@
 // src/components/about.jsx
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   FaGem,
   FaLightbulb,
@@ -12,178 +12,209 @@ import {
   FaBoxOpen,
   FaGlobeAmericas
 } from 'react-icons/fa';
+import { API_URL, STORAGE_URL } from '../../config';
 import './about.css';
 
 const About = () => {
+  const [header, setHeader] = useState(null);
+  const [story, setStory] = useState(null);
+  const [values, setValues] = useState(null);
+  const [whyChooseUs, setWhyChooseUs] = useState(null);
+  const [achievement, setAchievement] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchAboutData = async () => {
+      try {
+        const [
+          headerRes,
+          storyRes,
+          valuesRes,
+          whyRes,
+          achievementRes
+        ] = await Promise.all([
+          fetch(`${API_URL}/about-header`),
+          fetch(`${API_URL}/about-story`),
+          fetch(`${API_URL}/about-values`),
+          fetch(`${API_URL}/about-why-choose-us`),
+          fetch(`${API_URL}/about-achievement`)
+        ]);
+
+        const headerData = await headerRes.json();
+        const storyData = await storyRes.json();
+        const valuesData = await valuesRes.json();
+        const whyData = await whyRes.json();
+        const achievementData = await achievementRes.json();
+
+        setHeader(headerData);
+        setStory(storyData);
+        setValues(valuesData);
+        setWhyChooseUs(whyData);
+        setAchievement(achievementData);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching about data:', error);
+        setLoading(false);
+      }
+    };
+
+    fetchAboutData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="about">
+        <div className="about-loading">
+          <h2>Loading...</h2>
+        </div>
+      </div>
+    );
+  }
+
+  // Helper function to split description into paragraphs
+  const renderParagraphs = (text) => {
+    if (!text) return null;
+    // Split by \n\n or \n or double line breaks
+    const paragraphs = text.split(/\n\s*\n/);
+    return paragraphs.map((para, index) => (
+      <p key={index}>{para.trim()}</p>
+    ));
+  };
+
   return (
     <div className="about">
-      {/* Hero Section */}
-      <div
-        className="about-hero"
-        style={{
-          backgroundImage: "url('/images/chi1.png')"
-        }}
-      >
-        <div className="about-hero-overlay">
-          <span className="about-tag">ABOUT US</span>
-          <h1>
-            BUILT FOR CHEFS. <br />
-            <span>DRIVEN BY PASSION.</span>
-          </h1>
-          <p>
-            Chefset is more than just a brand — it's our commitment to every
-            chef who strives for perfection. We create premium kitchen
-            equipment that combines professional quality, innovative design,
-            and unmatched durability.
-          </p>
+      {/* ==================== HERO SECTION ==================== */}
+      {header && (
+        <div
+          className="about-hero"
+          style={{
+            backgroundImage: `url(${STORAGE_URL}/${header.image})`
+          }}
+        >
+          <div className="about-hero-overlay">
+            <span className="about-tag">{header.heading}</span>
+            <h1>
+              BUILT FOR CHEFS. <br />
+              <span>DRIVEN BY PASSION.</span>
+            </h1>
+            <p>{header.description}</p>
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* Story Section */}
-      <div className="about-story">
-        <div className="about-story-image">
-          <img src="/images/chi2.png" alt="Chef at work" />
-        </div>
+      {/* ==================== STORY SECTION ==================== */}
+      {story && (
+        <div className="about-story">
+          <div className="about-story-image">
+            <img src={`${STORAGE_URL}/${story.image}`} alt="Chef at work" />
+          </div>
 
-        <div className="about-story-text">
-          <span className="about-eyebrow">OUR STORY</span>
-          <h2>A LEGACY OF QUALITY</h2>
-          <p>
-            Chefset was founded by professional chefs who understood the
-            importance of quality tools in the kitchen. From the very first
-            product, our mission has remained the same.
-          </p>
-          <p>
-            We set out to create high-quality kitchen equipment that meets
-            the demands of professionals and home cooks alike, without
-            compromise on durability or design.
-          </p>
-          <p>
-            Today, Chefset is proud to be a trusted name in kitchen tools —
-            delivering excellence in every kitchen we're a part of.
-          </p>
-        </div>
+          <div className="about-story-text">
+            <span className="about-eyebrow">{story.title}</span>
+            <h2>{story.subtitle}</h2>
+            {/* ✅ Description with paragraph gaps */}
+            {renderParagraphs(story.description)}
+          </div>
 
-        <div className="about-story-side">
-          <span className="about-eyebrow">OUR MISSION</span>
-          <h2>ELEVATING EVERY CULINARY EXPERIENCE</h2>
-          <p>
-            Our mission is to provide chefs and cooking enthusiasts with the
-            highest quality equipment that enhances their craft and elevates
-            their culinary creations.
-          </p>
+          <div className="about-story-side">
+            <span className="about-eyebrow">{story.missionTitle}</span>
+            <h2>{story.missionSubtitle}</h2>
+            <p>{story.missionDescription}</p>
 
-          <div className="about-features">
-            <div className="about-feature">
-              <FaMedal className="feature-icon" />
-              <div>
-                <h4>Premium Quality</h4>
-                <p>Uncompromising standards of quality</p>
-              </div>
-            </div>
-            <div className="about-feature">
-              <FaShieldAlt className="feature-icon" />
-              <div>
-                <h4>Trust &amp; Reliability</h4>
-                <p>Built to last, trusted by professionals</p>
-              </div>
-            </div>
-            <div className="about-feature">
-              <FaLightbulb className="feature-icon" />
-              <div>
-                <h4>Innovative</h4>
-                <p>Constantly improving and evolving</p>
-              </div>
-            </div>
-            <div className="about-feature">
-              <FaHeadset className="feature-icon" />
-              <div>
-                <h4>Customer Focus</h4>
-                <p>Your satisfaction is our priority</p>
-              </div>
+            <div className="about-features">
+              {story.missionPoints && story.missionPoints.map((point, index) => {
+                const [name, desc] = point.split(' - ');
+                const iconMap = {
+                  'Premium Quality': <FaMedal className="feature-icon" />,
+                  'Trust & Reliability': <FaShieldAlt className="feature-icon" />,
+                  'Innovative': <FaLightbulb className="feature-icon" />,
+                  'Customer Focus': <FaHeadset className="feature-icon" />
+                };
+
+                return (
+                  <div className="about-feature" key={index}>
+                    {iconMap[name] || <FaMedal className="feature-icon" />}
+                    <div>
+                      <h4>{name}</h4>
+                      <p>{desc}</p>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>
-      </div>
+      )}
 
-      {/* Principles Section */}
-      <div className="about-principles">
-        <span className="about-eyebrow center">OUR VALUES</span>
-        <h2 className="center">THE PRINCIPLES THAT GUIDE US</h2>
+      {/* ==================== VALUES SECTION ==================== */}
+      {values && (
+        <div className="about-principles">
+          <span className="about-eyebrow center">{values.title}</span>
+          <h2 className="center">{values.subtitle}</h2>
 
-        <div className="principles-grid">
-          <div className="principle-card">
-            <FaGem className="principle-icon" />
-            <h4>QUALITY</h4>
-            <p>Uncompromising standards in every product created</p>
-          </div>
-          <div className="principle-card">
-            <FaLightbulb className="principle-icon" />
-            <h4>INNOVATION</h4>
-            <p>Continuously improving and evolving our designs</p>
-          </div>
-          <div className="principle-card">
-            <FaHandshake className="principle-icon" />
-            <h4>TRUST</h4>
-            <p>Building lasting relationships with our customers</p>
-          </div>
-          <div className="principle-card">
-            <FaTrophy className="principle-icon" />
-            <h4>EXCELLENCE</h4>
-            <p>Striving for perfection in everything we do</p>
-          </div>
-        </div>
-      </div>
+          <div className="principles-grid">
+            {values.values && values.values.map((value, index) => {
+              const iconMap = {
+                'QUALITY': <FaGem className="principle-icon" />,
+                'INNOVATION': <FaLightbulb className="principle-icon" />,
+                'TRUST': <FaHandshake className="principle-icon" />,
+                'EXCELLENCE': <FaTrophy className="principle-icon" />
+              };
 
-      {/* Tools Section */}
-      <div className="about-tools">
-        <div className="about-tools-text">
-          <span className="about-eyebrow">WHY CHOOSE CHEFSET?</span>
-          <h2>TOOLS THAT MAKE A DIFFERENCE</h2>
-          <ul>
-            <li>Premium materials for superior performance</li>
-            <li>Ergonomic designs for comfort and efficiency</li>
-            <li>Rigorous testing for reliability and safety</li>
-            <li>Designed for professionals, perfect for everyone</li>
-          </ul>
+              return (
+                <div className="principle-card" key={index}>
+                  {iconMap[value.name] || <FaGem className="principle-icon" />}
+                  <h4>{value.name}</h4>
+                  <p>{value.description}</p>
+                </div>
+              );
+            })}
+          </div>
         </div>
+      )}
 
-        <div className="about-tools-image">
-          <img src="/images/chi3.png" alt="Kitchen tools" />
-        </div>
-      </div>
+      {/* ==================== WHY CHOOSE US SECTION ==================== */}
+      {whyChooseUs && (
+        <div className="about-tools">
+          <div className="about-tools-text">
+            <span className="about-eyebrow">{whyChooseUs.title}</span>
+            <h2>{whyChooseUs.subtitle}</h2>
+            <ul>
+              {whyChooseUs.points && whyChooseUs.points.map((point, index) => (
+                <li key={index}>{point}</li>
+              ))}
+            </ul>
+          </div>
 
-      {/* Stats Bar */}
-      <div className="about-stats">
-        <div className="stat-item">
-          <FaUserFriends className="stat-icon" />
-          <div>
-            <h3>25+</h3>
-            <p>Years of Experience</p>
+          <div className="about-tools-image">
+            <img src={`${STORAGE_URL}/${whyChooseUs.image}`} alt="Kitchen tools" />
           </div>
         </div>
-        <div className="stat-item">
-          <FaBoxOpen className="stat-icon" />
-          <div>
-            <h3>10,000+</h3>
-            <p>Happy Customers</p>
-          </div>
+      )}
+
+      {/* ==================== STATS / ACHIEVEMENTS SECTION ==================== */}
+      {achievement && (
+        <div className="about-stats">
+          {achievement.achievements && achievement.achievements.map((stat, index) => {
+            const iconMap = {
+              'Years of Experience': <FaUserFriends className="stat-icon" />,
+              'Happy Customers': <FaBoxOpen className="stat-icon" />,
+              'Premium Products': <FaTrophy className="stat-icon" />,
+              'Countries Served': <FaGlobeAmericas className="stat-icon" />
+            };
+
+            return (
+              <div className="stat-item" key={index}>
+                {iconMap[stat.label] || <FaUserFriends className="stat-icon" />}
+                <div>
+                  <h3>{stat.number}</h3>
+                  <p>{stat.label}</p>
+                </div>
+              </div>
+            );
+          })}
         </div>
-        <div className="stat-item">
-          <FaTrophy className="stat-icon" />
-          <div>
-            <h3>150+</h3>
-            <p>Premium Products</p>
-          </div>
-        </div>
-        <div className="stat-item">
-          <FaGlobeAmericas className="stat-icon" />
-          <div>
-            <h3>50+</h3>
-            <p>Countries Served</p>
-          </div>
-        </div>
-      </div>
+      )}
     </div>
   );
 };

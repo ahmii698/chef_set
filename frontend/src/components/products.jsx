@@ -1,80 +1,33 @@
 // src/components/products.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FaHeart, FaArrowRight } from 'react-icons/fa';
 import { isInWishlist, addToWishlist } from '../utils/wishlist';
+import { API_URL, STORAGE_URL } from '../../config';
 import './products.css';
-
-const products = [
-  {
-    id: 1,
-    name: 'Professional Chef Knife',
-    price: '£1,500',
-    image: '/images/p1.png',
-    category: 'KNIVES',
-    description: 'High-Quality Stainless Steel'
-  },
-  {
-    id: 2,
-    name: 'Tongs & Spatulas Set',
-    price: '£1,500',
-    image: '/images/p2.png',
-    category: 'UTENSILS',
-    description: 'Durable & Heat Resistant'
-  },
-  {
-    id: 3,
-    name: 'Stainless Steel Containers',
-    price: '£1,500',
-    image: '/images/p3.png',
-    category: 'STORAGE',
-    description: 'Leak Proof & Long Lasting'
-  },
-  {
-    id: 4,
-    name: 'Premium Cutlery Set',
-    price: '£1,500',
-    image: '/images/p4.png',
-    category: 'CUTLERY',
-    description: 'Elegant & Premium Finish'
-  },
-  {
-    id: 5,
-    name: 'Non-Stick Frying Pan',
-    price: '£1,500',
-    image: '/images/p5.png',
-    category: 'COOKWARE',
-    description: 'Even Heat Distribution'
-  },
-  {
-    id: 6,
-    name: 'Professional Mixing Bowl',
-    price: '£1,500',
-    image: '/images/p6.png',
-    category: 'BOWLS',
-    description: 'High-Grade Stainless Steel'
-  },
-  {
-    id: 7,
-    name: 'Modern Cutting Board',
-    price: '£1,500',
-    image: '/images/p7.png',
-    category: 'BOARDS',
-    description: 'Durable & Stylish Design'
-  },
-  {
-    id: 8,
-    name: 'Kids Mixer Set',
-    price: '£1,500',
-    image: '/images/p8.png',
-    category: 'MIXERS',
-    description: 'Powerful & Easy to Use'
-  }
-];
 
 const Products = () => {
   const navigate = useNavigate();
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState('');
+
+  // Fetch products from API
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await fetch(`${API_URL}/products`);
+        if (!response.ok) throw new Error('Failed to fetch products');
+        const data = await response.json();
+        setProducts(data);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching products:', error);
+        setLoading(false);
+      }
+    };
+    fetchProducts();
+  }, []);
 
   const showToast = (message) => {
     setToast(message);
@@ -82,24 +35,33 @@ const Products = () => {
   };
 
   const handleWishlistClick = (product) => {
-    // Already wishlist mein hai -> kuch nahi karna, sirf message dikhana
-    if (isInWishlist(product.id)) {
+    if (isInWishlist(product._id)) {
       showToast('Already in wishlist');
       return;
     }
 
-    // Naya item -> wishlist mein add karo, isi page par raho
     addToWishlist({
-      id: product.id,
+      id: product._id,
       name: product.name,
       desc: product.description,
-      price: parseFloat(product.price.replace(/[^0-9.]/g, '')) || 0,
+      price: product.price,
       image: product.image,
       inStock: true,
       shipping: 'Ships in 1-2 days',
     });
     showToast('Added to wishlist');
   };
+
+  if (loading) {
+    return (
+      <div className="products">
+        <div className="products-header">
+          <h1>PREMIUM <span>KITCHEN EQUIPMENT</span></h1>
+          <p>Loading products...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="products">
@@ -133,36 +95,33 @@ const Products = () => {
 
       <div className="products-grid">
         {products.map((product) => (
-          <div className="product-card-wrapper" key={product.id}>
+          <div className="product-card-wrapper" key={product._id}>
             <div className="product-card">
-              {/* Product Image with overlay stuff */}
               <div className="product-image">
-                <img src={product.image} alt={product.name} />
-
-                {/* Category Badge - overlaid top-left */}
+                <img 
+                  src={`${STORAGE_URL}/${product.image}`} 
+                  alt={product.name} 
+                />
                 <span className="product-badge">{product.category}</span>
 
-                {/* Wishlist Heart - overlaid top-right */}
                 <button
-                  className={`wishlist-btn ${isInWishlist(product.id) ? 'active' : ''}`}
+                  className={`wishlist-btn ${isInWishlist(product._id) ? 'active' : ''}`}
                   aria-label="Add to wishlist"
                   onClick={() => handleWishlistClick(product)}
                 >
                   <FaHeart />
                 </button>
 
-                {/* Hover Overlay - subtle darken only */}
                 <div className="product-overlay"></div>
               </div>
 
-              {/* Product Info */}
               <div className="product-info">
                 <h3>{product.name}</h3>
                 <p className="product-desc">{product.description}</p>
 
                 <div className="product-bottom-row">
-                  <p className="product-price">{product.price}</p>
-                  <Link to={`/product/${product.id}`} className="btn-view-link">
+                  <p className="product-price">PKR {product.price.toLocaleString()}</p>
+                  <Link to={`/product/${product._id}`} className="btn-view-link">
                     View Details <FaArrowRight className="btn-arrow" />
                   </Link>
                 </div>
@@ -171,9 +130,6 @@ const Products = () => {
           </div>
         ))}
       </div>
-
-      {/* View All Button */}
-
     </div>
   );
 };

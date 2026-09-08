@@ -1,139 +1,51 @@
 // src/components/productDetail.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { FaTruck, FaStar, FaUndo, FaShoppingCart, FaChevronRight, FaHeart } from 'react-icons/fa';
 import { addToCart } from '../utils/cart';
 import { isInWishlist, addToWishlist } from '../utils/wishlist';
+import { API_URL, STORAGE_URL } from '../../config';
 import './productDetail.css';
-
-// Import product images
-import p1 from '/images/p1.png';
-import p2 from '/images/p2.png';
-import p3 from '/images/p3.png';
-import p4 from '/images/p4.png';
-import p5 from '/images/p5.png';
-import p6 from '/images/p6.png';
-import p7 from '/images/p7.png';
-import p8 from '/images/p8.png';
-
-const productData = {
-  1: {
-    name: 'Professional Chef Knife',
-    price: 'PKR 8,500',
-    rating: 5,
-    description: 'High-carbon premium steel blade for exceptional sharpness and edge retention. Ergonomic handle for comfortable grip.',
-    images: [p1, p1, p1, p1],
-    features: [
-      'High-carbon stainless steel blade',
-      'Ergonomic ergonomic handle',
-      'Full tang for perfect balance',
-      'Precision ground to durability'
-    ]
-  },
-  2: {
-    name: 'Tongs & Spatulas Set',
-    price: 'PKR 8,500',
-    rating: 5,
-    description: 'Professional grade utensils designed for precision cooking. Heat resistant and durable.',
-    images: [p2, p2, p2, p2],
-    features: [
-      'Heat resistant up to 400°F',
-      'Non-slip grip handles',
-      'Stainless steel construction',
-      'Dishwasher safe'
-    ]
-  },
-  3: {
-    name: 'Stainless Steel Containers',
-    price: 'PKR 8,500',
-    rating: 5,
-    description: 'Premium stainless steel containers for professional storage. Airtight and durable.',
-    images: [p3, p3, p3, p3],
-    features: [
-      '18/8 stainless steel',
-      'Airtight lids',
-      'Stackable design',
-      'BPA-free'
-    ]
-  },
-  4: {
-    name: 'Premium Cutlery Set',
-    price: 'PKR 8,500',
-    rating: 5,
-    description: 'Complete cutlery set for professional and home use. Precision forged for durability.',
-    images: [p4, p4, p4, p4],
-    features: [
-      'Precision forged blades',
-      'Ergonomic handles',
-      'Mirror finish',
-      'Lifetime warranty'
-    ]
-  },
-  5: {
-    name: 'Non-Stick Frying Pan',
-    price: 'PKR 8,500',
-    rating: 5,
-    description: 'Professional non-stick frying pan for perfect cooking results every time.',
-    images: [p5, p5, p5, p5],
-    features: [
-      'Premium non-stick coating',
-      'Even heat distribution',
-      'Comfortable handle',
-      'Oven safe up to 400°F'
-    ]
-  },
-  6: {
-    name: 'Professional Mixing Bowl',
-    price: 'PKR 8,500',
-    rating: 5,
-    description: 'Heavy-duty mixing bowl for professional kitchens. Perfect for all mixing tasks.',
-    images: [p6, p6, p6, p6],
-    features: [
-      'Stainless steel construction',
-      'Non-slip base',
-      'Easy pour spout',
-      'Dishwasher safe'
-    ]
-  },
-  7: {
-    name: 'Modern Cutting Board',
-    price: 'PKR 8,500',
-    rating: 5,
-    description: 'Professional grade cutting board with modern design. Durable and easy to clean.',
-    images: [p7, p7, p7, p7],
-    features: [
-      'Premium bamboo construction',
-      'Non-slip edges',
-      'Juice groove',
-      'Easy to clean'
-    ]
-  },
-  8: {
-    name: 'Kids Mixer Set',
-    price: 'PKR 8,500',
-    rating: 5,
-    description: 'Safe and fun mixer set for young chefs. Educational and entertaining.',
-    images: [p8, p8, p8, p8],
-    features: [
-      'Safe plastic construction',
-      'BPA-free materials',
-      'Interactive design',
-      'Easy to use'
-    ]
-  }
-};
 
 const ProductDetail = () => {
   const { id } = useParams();
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
   const [mainImage, setMainImage] = useState(0);
   const [toast, setToast] = useState('');
-  const product = productData[id];
+
+  // Fetch single product from API
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        const response = await fetch(`${API_URL}/products/${id}`);
+        if (!response.ok) throw new Error('Product not found');
+        const data = await response.json();
+        setProduct(data);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching product:', error);
+        setLoading(false);
+      }
+    };
+    fetchProduct();
+  }, [id]);
 
   const showToast = (message) => {
     setToast(message);
     setTimeout(() => setToast(''), 2000);
   };
+
+  if (loading) {
+    return (
+      <div className="product-detail">
+        <div className="product-detail-container">
+          <h2>Loading product details...</h2>
+        </div>
+      </div>
+    );
+  }
 
   if (!product) {
     return (
@@ -151,11 +63,11 @@ const ProductDetail = () => {
   const handleAddToCart = () => {
     addToCart(
       {
-        id: Number(id),
+        id: product._id,
         name: product.name,
         desc: product.description,
-        price: parseFloat(product.price.replace(/[^0-9.]/g, '')) || 0,
-        image: product.images[0],
+        price: product.price,
+        image: product.image,
       },
       quantity
     );
@@ -163,22 +75,45 @@ const ProductDetail = () => {
   };
 
   const handleWishlistClick = () => {
-    const productId = Number(id);
-    if (isInWishlist(productId)) {
+    if (isInWishlist(product._id)) {
       showToast('Already in wishlist');
       return;
     }
     addToWishlist({
-      id: productId,
+      id: product._id,
       name: product.name,
       desc: product.description,
-      price: parseFloat(product.price.replace(/[^0-9.]/g, '')) || 0,
-      image: product.images[0],
+      price: product.price,
+      image: product.image,
       inStock: true,
       shipping: 'Ships in 1-2 days',
     });
     showToast('Added to wishlist');
   };
+
+  // ✅ YAHAN CHANGE HUA HAI - Database se images array use karo
+  const getProductImages = () => {
+    if (product.images && product.images.length > 0) {
+      return product.images.map(img => `${STORAGE_URL}/${img}`);
+    } else {
+      return [
+        `${STORAGE_URL}/${product.image}`,
+        `${STORAGE_URL}/${product.image}`,
+        `${STORAGE_URL}/${product.image}`,
+        `${STORAGE_URL}/${product.image}`
+      ];
+    }
+  };
+
+  const images = getProductImages();
+
+  // Features from database ya fallback
+  const features = product.features || [
+    'Premium quality material',
+    'Professional grade design',
+    'Durable and long lasting',
+    'Easy to clean and maintain'
+  ];
 
   return (
     <div className="product-detail">
@@ -215,7 +150,7 @@ const ProductDetail = () => {
       <div className="product-detail-container">
         {/* Left Side - Vertical Thumbnails */}
         <div className="product-thumbnails-col">
-          {product.images.map((img, index) => (
+          {images.map((img, index) => (
             <div
               key={index}
               className={`thumbnail ${mainImage === index ? 'active' : ''}`}
@@ -228,7 +163,7 @@ const ProductDetail = () => {
 
         {/* Center - Main Image */}
         <div className="product-main-image">
-          <img src={product.images[mainImage]} alt={product.name} />
+          <img src={images[mainImage]} alt={product.name} />
         </div>
 
         {/* Right Side - Info */}
@@ -236,18 +171,18 @@ const ProductDetail = () => {
           <h1>{product.name}</h1>
 
           <div className="product-rating">
-            {[...Array(product.rating)].map((_, i) => (
+            {[...Array(product.rating || 5)].map((_, i) => (
               <FaStar key={i} className="rating-star" />
             ))}
           </div>
 
-          <p className="product-detail-price">{product.price}</p>
+          <p className="product-detail-price">PKR {product.price.toLocaleString()}</p>
           <p className="product-detail-description">{product.description}</p>
 
           <div className="product-features">
             <h3>FEATURES:</h3>
             <ul>
-              {product.features.map((feature, index) => (
+              {features.map((feature, index) => (
                 <li key={index}>{feature}</li>
               ))}
             </ul>

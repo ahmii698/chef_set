@@ -1,11 +1,25 @@
 /* src/components/about.css */
+
+/* ==================== BASE ==================== */
 .about {
   max-width: 1400px;
   margin: 0 auto;
   padding: 0 1rem 2rem;
+  background: #0a0a0a;
+  color: #ffffff;
 }
 
-/* Hero Section */
+/* ==================== LOADING ==================== */
+.about-loading {
+  min-height: 60vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: #e8a33c;
+}
+
+/* ==================== HERO SECTION ==================== */
 .about-hero {
   position: relative;
   border-radius: 16px;
@@ -13,7 +27,7 @@
   margin-bottom: 3rem;
   background-size: cover;
   background-position: center;
-  min-height: 380px;
+  min-height: 420px;
   display: flex;
   align-items: center;
   border: 1px solid #2a2a2a;
@@ -21,7 +35,8 @@
 
 .about-hero-overlay {
   width: 100%;
-  padding: 3rem 3rem;
+  padding: 3.5rem 3rem;
+  background: linear-gradient(135deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 100%);
 }
 
 .about-tag {
@@ -29,16 +44,17 @@
   color: #e8a33c;
   font-size: 0.8rem;
   font-weight: 700;
-  letter-spacing: 2px;
+  letter-spacing: 3px;
   margin-bottom: 0.8rem;
+  text-transform: uppercase;
   text-shadow: 0 2px 10px rgba(0,0,0,0.9);
 }
 
 .about-hero h1 {
-  font-size: 2.6rem;
+  font-size: 3rem;
   font-weight: 800;
   color: #ffffff;
-  line-height: 1.25;
+  line-height: 1.2;
   margin-bottom: 1rem;
   letter-spacing: 1px;
   text-shadow: 0 2px 12px rgba(0,0,0,0.85), 0 0 40px rgba(0,0,0,0.6);
@@ -51,13 +67,13 @@
 
 .about-hero p {
   color: #eeeeee;
-  font-size: 1rem;
+  font-size: 1.05rem;
   line-height: 1.8;
   max-width: 600px;
   text-shadow: 0 2px 10px rgba(0,0,0,0.9), 0 0 30px rgba(0,0,0,0.7);
 }
 
-/* Eyebrow labels */
+/* ==================== EYEBROW ==================== */
 .about-eyebrow {
   display: block;
   color: #e8a33c;
@@ -65,13 +81,14 @@
   font-weight: 700;
   letter-spacing: 2px;
   margin-bottom: 0.6rem;
+  text-transform: uppercase;
 }
 
 .about-eyebrow.center {
   text-align: center;
 }
 
-/* Story Section */
+/* ==================== STORY SECTION ==================== */
 .about-story {
   display: grid;
   grid-template-columns: minmax(280px, 0.9fr) minmax(260px, 1fr) minmax(260px, 1fr);
@@ -85,6 +102,7 @@
   overflow: hidden;
   border: 1px solid #2a2a2a;
   height: 400px;
+  background: #141414;
 }
 
 .about-story-image img {
@@ -97,35 +115,39 @@
 .about-story-text h2,
 .about-story-side h2 {
   color: #ffffff;
-  font-size: 1.4rem;
+  font-size: 1.5rem;
   font-weight: 700;
   margin-bottom: 1rem;
   letter-spacing: 0.5px;
   line-height: 1.4;
-  min-height: 3.92rem;
-  display: flex;
-  align-items: flex-end;
 }
 
+/* ✅ STORY DESCRIPTION - PARAGRAPH GAPS */
 .about-story-text p {
-  color: #aaaaaa;
-  font-size: 0.88rem;
-  line-height: 1.8;
-  margin-bottom: 0.9rem;
+  color: #cccccc;
+  font-size: 0.92rem;
+  line-height: 1.9;
+  margin-bottom: 1.2rem;
+  letter-spacing: 0.3px;
+}
+
+.about-story-text p:last-child {
+  margin-bottom: 0;
 }
 
 .about-story-side p {
-  color: #aaaaaa;
-  font-size: 0.88rem;
-  line-height: 1.8;
-  margin-bottom: 1.2rem;
+  color: #cccccc;
+  font-size: 0.92rem;
+  line-height: 1.9;
+  margin-bottom: 1.5rem;
+  letter-spacing: 0.3px;
 }
 
-/* Features inside story side */
+/* ==================== FEATURES ==================== */
 .about-features {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1rem;
+  gap: 0.8rem;
 }
 
 .about-feature {
@@ -135,42 +157,49 @@
   background: #141414;
   border: 1px solid #2a2a2a;
   border-radius: 10px;
-  padding: 0.9rem;
+  padding: 1rem;
+  transition: border-color 0.3s ease;
+}
+
+.about-feature:hover {
+  border-color: #e8a33c;
 }
 
 .feature-icon {
   color: #e8a33c;
   font-size: 1.2rem;
   flex-shrink: 0;
-  margin-top: 0.15rem;
+  margin-top: 0.1rem;
 }
 
 .about-feature h4 {
   color: #ffffff;
-  font-size: 0.82rem;
+  font-size: 0.85rem;
   font-weight: 600;
   margin-bottom: 0.2rem;
+  letter-spacing: 0.5px;
 }
 
 .about-feature p {
-  color: #888;
-  font-size: 0.7rem;
+  color: #888888;
+  font-size: 0.72rem;
   margin: 0;
-  line-height: 1.4;
+  line-height: 1.5;
 }
 
-/* Principles Section */
+/* ==================== PRINCIPLES / VALUES ==================== */
 .about-principles {
   text-align: center;
   margin-bottom: 3.5rem;
+  padding: 2rem 0;
 }
 
 .about-principles h2.center {
   color: #ffffff;
-  font-size: 1.7rem;
+  font-size: 2rem;
   font-weight: 700;
-  margin-bottom: 2rem;
-  letter-spacing: 0.5px;
+  margin-bottom: 2.5rem;
+  letter-spacing: 1px;
 }
 
 .principles-grid {
@@ -190,29 +219,30 @@
 .principle-card:hover {
   border-color: #e8a33c;
   transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(232, 163, 60, 0.1);
 }
 
 .principle-icon {
   color: #e8a33c;
-  font-size: 1.8rem;
+  font-size: 2rem;
   margin-bottom: 1rem;
 }
 
 .principle-card h4 {
   color: #ffffff;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   font-weight: 700;
   letter-spacing: 1px;
   margin-bottom: 0.6rem;
 }
 
 .principle-card p {
-  color: #888;
-  font-size: 0.78rem;
+  color: #888888;
+  font-size: 0.8rem;
   line-height: 1.6;
 }
 
-/* Tools Section */
+/* ==================== WHY CHOOSE US ==================== */
 .about-tools {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -227,7 +257,7 @@
 
 .about-tools-text h2 {
   color: #ffffff;
-  font-size: 1.6rem;
+  font-size: 1.8rem;
   font-weight: 700;
   margin-bottom: 1.2rem;
   letter-spacing: 0.5px;
@@ -240,12 +270,17 @@
 }
 
 .about-tools-text ul li {
-  color: #ccc;
-  font-size: 0.9rem;
-  padding: 0.6rem 0;
-  padding-left: 1.6rem;
+  color: #cccccc;
+  font-size: 0.95rem;
+  padding: 0.7rem 0;
+  padding-left: 1.8rem;
   position: relative;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  line-height: 1.6;
+}
+
+.about-tools-text ul li:last-child {
+  border-bottom: none;
 }
 
 .about-tools-text ul li::before {
@@ -253,12 +288,14 @@
   position: absolute;
   left: 0;
   color: #e8a33c;
+  font-size: 1rem;
 }
 
 .about-tools-image {
   border-radius: 14px;
   overflow: hidden;
   border: 1px solid #2a2a2a;
+  background: #141414;
 }
 
 .about-tools-image img {
@@ -269,7 +306,7 @@
   min-height: 300px;
 }
 
-/* Stats Bar */
+/* ==================== STATS ==================== */
 .about-stats {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -277,7 +314,7 @@
   background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0a0a0a 100%);
   border: 1px solid #2a2a2a;
   border-radius: 16px;
-  padding: 2rem;
+  padding: 2.5rem 2rem;
 }
 
 .stat-item {
@@ -285,84 +322,184 @@
   align-items: center;
   justify-content: center;
   gap: 0.8rem;
+  text-align: left;
 }
 
 .stat-icon {
   color: #e8a33c;
-  font-size: 1.8rem;
+  font-size: 2rem;
   flex-shrink: 0;
 }
 
 .stat-item h3 {
   color: #ffffff;
-  font-size: 1.4rem;
+  font-size: 1.6rem;
   font-weight: 700;
   margin: 0;
+  line-height: 1.2;
 }
 
 .stat-item p {
-  color: #888;
-  font-size: 0.72rem;
+  color: #888888;
+  font-size: 0.75rem;
   margin: 0;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
 }
 
-/* Responsive */
+/* ==================== RESPONSIVE ==================== */
+
+/* Large screens */
 @media (max-width: 1200px) {
   .about-story {
     grid-template-columns: 1fr 1fr;
   }
   .about-story-image {
     grid-column: 1 / -1;
-    height: 300px;
-  }
-  .about-story-text,
-  .about-story-side {
-    min-width: 0;
+    height: 280px;
   }
 }
 
-@media (max-width: 900px) {
-  .about-story {
-    grid-template-columns: 1fr;
+/* Tablet */
+@media (max-width: 992px) {
+  .about-hero h1 {
+    font-size: 2.5rem;
   }
+  
+  .about-principles h2.center {
+    font-size: 1.8rem;
+  }
+  
   .principles-grid {
     grid-template-columns: repeat(2, 1fr);
   }
+  
   .about-stats {
     grid-template-columns: repeat(2, 1fr);
   }
-  .about-tools {
-    grid-template-columns: 1fr;
-  }
-  .about-tools-image {
-    order: -1;
-  }
 }
 
+/* Mobile */
 @media (max-width: 768px) {
-  .about-hero {
-    min-height: 300px;
+  .about {
+    padding: 0 0.8rem 1.5rem;
   }
+
+  .about-hero {
+    min-height: 280px;
+    border-radius: 12px;
+  }
+  
   .about-hero-overlay {
     padding: 2rem 1.5rem;
   }
+  
   .about-hero h1 {
-    font-size: 1.9rem;
+    font-size: 2rem;
   }
+  
+  .about-hero p {
+    font-size: 0.9rem;
+  }
+
+  .about-story {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  
+  .about-story-image {
+    height: 220px;
+    grid-column: auto;
+  }
+  
+  .about-story-text h2,
+  .about-story-side h2 {
+    font-size: 1.3rem;
+    min-height: auto;
+  }
+  
   .about-features {
     grid-template-columns: 1fr;
   }
+
+  .about-principles {
+    padding: 0 0 2rem 0;
+  }
+  
+  .about-principles h2.center {
+    font-size: 1.5rem;
+  }
+  
+  .principles-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.8rem;
+  }
+  
+  .principle-card {
+    padding: 1.5rem 1rem;
+  }
+
+  .about-tools {
+    grid-template-columns: 1fr;
+    padding: 1.5rem;
+    gap: 1.5rem;
+  }
+  
+  .about-tools-text h2 {
+    font-size: 1.4rem;
+  }
+  
+  .about-tools-image {
+    order: -1;
+  }
+  
+  .about-tools-image img {
+    min-height: 200px;
+  }
+
+  .about-stats {
+    grid-template-columns: 1fr 1fr;
+    padding: 1.5rem;
+    gap: 1rem;
+  }
+  
+  .stat-item {
+    justify-content: flex-start;
+  }
+  
+  .stat-item h3 {
+    font-size: 1.3rem;
+  }
 }
 
+/* Small Mobile */
 @media (max-width: 480px) {
+  .about-hero h1 {
+    font-size: 1.6rem;
+  }
+  
+  .about-hero-overlay {
+    padding: 1.5rem 1rem;
+  }
+  
+  .about-story-text p {
+    font-size: 0.85rem;
+  }
+  
   .principles-grid {
     grid-template-columns: 1fr;
   }
+  
   .about-stats {
     grid-template-columns: 1fr;
     gap: 1rem;
   }
+  
   .stat-item {
-    justify-content: flex-start;
+    justify-content: center;
+  }
+  
+  .about-tools-text ul li {
+    font-size: 0.85rem;
   }
 }

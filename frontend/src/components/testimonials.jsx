@@ -1,40 +1,12 @@
 // src/components/testimonials.jsx
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { FaStar, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import { API_URL } from '../../config';
 import './testimonials.css';
 
-const testimonials = [
-  {
-    id: 1,
-    name: 'Chef Michael Rodriguez',
-    role: 'Executive Chef, Michelin Star Restaurant',
-    text: 'Chefset has completely transformed my kitchen. The quality and precision of their tools are unmatched. Every product is a game-changer.',
-    rating: 5
-  },
-  {
-    id: 2,
-    name: 'Sarah Chen',
-    role: 'Professional Baker',
-    text: 'I\'ve been using Chefset products for over 5 years now. The durability and performance are exceptional. Highly recommended for any serious cook.',
-    rating: 5
-  },
-  {
-    id: 3,
-    name: 'Chef David Thompson',
-    role: 'Culinary Instructor',
-    text: 'I recommend Chefset to all my students. The quality-to-price ratio is incredible, and the products last for years.',
-    rating: 5
-  },
-  {
-    id: 4,
-    name: 'Emma Williams',
-    role: 'Home Chef & Food Blogger',
-    text: 'These tools have elevated my cooking to a professional level. The design and functionality are perfect for both home and professional use.',
-    rating: 5
-  }
-];
-
 const Testimonials = () => {
+  const [testimonials, setTestimonials] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [visibleCount, setVisibleCount] = useState(3);
   const [index, setIndex] = useState(0);
   const [cardWidth, setCardWidth] = useState(0);
@@ -42,9 +14,26 @@ const Testimonials = () => {
   const viewportRef = useRef(null);
   const cardRef = useRef(null);
 
+  // ===== FETCH TESTIMONIALS =====
+  useEffect(() => {
+    const fetchTestimonials = async () => {
+      try {
+        const response = await fetch(`${API_URL}/testimonials`);
+        if (!response.ok) throw new Error('Failed to fetch testimonials');
+        const data = await response.json();
+        setTestimonials(data);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching testimonials:', error);
+        setLoading(false);
+      }
+    };
+    fetchTestimonials();
+  }, []);
+
   const maxIndex = Math.max(testimonials.length - visibleCount, 0);
 
-  // Decide how many cards fit based on screen size
+  // ===== UPDATE VISIBLE COUNT =====
   const updateVisibleCount = useCallback(() => {
     const width = window.innerWidth;
     if (width <= 600) {
@@ -56,7 +45,7 @@ const Testimonials = () => {
     }
   }, []);
 
-  // Measure exact rendered card width (includes its own margin/gap)
+  // ===== MEASURE CARD WIDTH =====
   const measureCardWidth = useCallback(() => {
     if (cardRef.current) {
       const rect = cardRef.current.getBoundingClientRect();
@@ -67,6 +56,7 @@ const Testimonials = () => {
     }
   }, []);
 
+  // ===== RESIZE EFFECTS =====
   useEffect(() => {
     updateVisibleCount();
     window.addEventListener('resize', updateVisibleCount);
@@ -80,10 +70,10 @@ const Testimonials = () => {
   }, [measureCardWidth, visibleCount]);
 
   useEffect(() => {
-    // Clamp index whenever visibleCount changes (e.g. resize)
     setIndex((prev) => Math.min(prev, Math.max(testimonials.length - visibleCount, 0)));
-  }, [visibleCount]);
+  }, [visibleCount, testimonials.length]);
 
+  // ===== NAVIGATION =====
   const goNext = () => {
     setIndex((prev) => (prev >= maxIndex ? 0 : prev + 1));
   };
@@ -98,11 +88,54 @@ const Testimonials = () => {
 
   const trackOffset = cardWidth * index;
 
+  // ===== LOADING =====
+  if (loading) {
+    return (
+      <div className="testimonials">
+        <div className="testimonials-header">
+          <div className="testimonials-overline">
+            <span className="overline-line"></span>
+            <span className="overline-text">TRUSTED BY PROFESSIONALS</span>
+            <span className="overline-line"></span>
+          </div>
+          <h1 className="testimonials-title">
+            AROUND <span className="highlight">THE WORLD.</span>
+          </h1>
+          <p>Loading testimonials...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!testimonials.length) {
+    return (
+      <div className="testimonials">
+        <div className="testimonials-header">
+          <div className="testimonials-overline">
+            <span className="overline-line"></span>
+            <span className="overline-text">TRUSTED BY PROFESSIONALS</span>
+            <span className="overline-line"></span>
+          </div>
+          <h1 className="testimonials-title">
+            AROUND <span className="highlight">THE WORLD.</span>
+          </h1>
+          <p>No testimonials available yet.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="testimonials">
       <div className="testimonials-header">
-        <h1>TRUSTED BY PROFESSIONALS</h1>
-        <h2>AROUND THE WORLD.</h2>
+        <div className="testimonials-overline">
+          <span className="overline-line"></span>
+          <span className="overline-text">TRUSTED BY PROFESSIONALS</span>
+          <span className="overline-line"></span>
+        </div>
+        <h1 className="testimonials-title">
+          AROUND <span className="highlight">THE WORLD.</span>
+        </h1>
         <p>See what others are saying about our products:</p>
       </div>
 
@@ -120,30 +153,33 @@ const Testimonials = () => {
             className="testimonials-track"
             style={{ transform: `translateX(-${trackOffset}px)` }}
           >
-            {testimonials.map((testimonial, i) => (
-              <div
-                className="testimonial-card"
-                key={testimonial.id}
-                ref={i === 0 ? cardRef : null}
-                style={{ flex: `0 0 calc(${100 / visibleCount}% - ${(1 * (visibleCount - 1)) / visibleCount}rem)` }}
-              >
-                {/* Name - Upar */}
-                <div className="testimonial-author">
-                  <h4>{testimonial.name}</h4>
-                  <p>{testimonial.role}</p>
-                </div>
+            {testimonials.map((testimonial, i) => {
+              const cardStyle = {
+                flex: `0 0 calc(${100 / visibleCount}% - ${(1 * (visibleCount - 1)) / visibleCount}rem)`
+              };
 
-                {/* Testimonial Text - Beech */}
-                <p className="testimonial-text">"{testimonial.text}"</p>
+              return (
+                <div
+                  className="testimonial-card"
+                  key={testimonial._id}
+                  ref={i === 0 ? cardRef : null}
+                  style={cardStyle}
+                >
+                  <div className="testimonial-author">
+                    <h4>{testimonial.name}</h4>
+                    <p>{testimonial.role}</p>
+                  </div>
 
-                {/* Stars - Neeche */}
-                <div className="testimonial-stars">
-                  {[...Array(testimonial.rating)].map((_, s) => (
-                    <FaStar key={s} className="star-icon" />
-                  ))}
+                  <p className="testimonial-text">"{testimonial.text}"</p>
+
+                  <div className="testimonial-stars">
+                    {[...Array(testimonial.rating || 5)].map((_, s) => (
+                      <FaStar key={s} className="star-icon" />
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
@@ -156,16 +192,18 @@ const Testimonials = () => {
         </button>
       </div>
 
-      {/* Dots indicator */}
-      <div className="testimonials-dots">
-        {Array.from({ length: maxIndex + 1 }).map((_, i) => (
-          <span
-            key={i}
-            className={`dot ${i === index ? 'active' : ''}`}
-            onClick={() => goTo(i)}
-          ></span>
-        ))}
-      </div>
+      {/* Dots */}
+      {maxIndex > 0 && (
+        <div className="testimonials-dots">
+          {Array.from({ length: maxIndex + 1 }).map((_, i) => (
+            <span
+              key={i}
+              className={`dot ${i === index ? 'active' : ''}`}
+              onClick={() => goTo(i)}
+            ></span>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

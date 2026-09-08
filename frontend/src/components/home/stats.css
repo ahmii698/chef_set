@@ -1,4 +1,5 @@
 /* src/components/home/stats.css */
+
 .home-stats-section {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -9,6 +10,14 @@
   border: 1px solid #2a2a2a;
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
   margin-bottom: 4rem;
+}
+
+.home-stats-loading {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: #e8a33c;
+  font-size: 1.2rem;
+  padding: 2rem;
 }
 
 .home-stats-section .home-stat-item {
@@ -41,6 +50,7 @@
   font-weight: 600;
 }
 
+/* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
   .home-stats-section {
     grid-template-columns: 1fr 1fr;
@@ -62,9 +72,19 @@
   .home-stats-section {
     grid-template-columns: 1fr;
     gap: 1rem;
+    padding: 1.5rem 1rem;
   }
 
   .home-stats-section .home-stat-item::after {
     display: none;
+  }
+
+  .home-stats-section .home-stat-item h3 {
+    font-size: 2rem;
+  }
+
+  .home-stats-section .home-stat-item p {
+    font-size: 0.7rem;
+    letter-spacing: 1px;
   }
 }

@@ -1,41 +1,47 @@
-import React, { useState } from "react";
+// src/components/animation/animation.jsx
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { API_URL, STORAGE_URL } from "../../../config";
 import "./animation.css";
 
-const categories = [
-  {
-    title: "Knives",
-    image: "/images/cs1.jpg", 
-    link: "/category/knives",
-  },
-  {
-    title: "Chopping Boards",
-    image: "/images/cs2.jpg",
-    link: "/category/chopping-boards",
-  },
-  {
-    title: "Cookware",
-    image: "/images/chi1.png",
-    link: "/category/cookware",
-  },
-  {
-    title: "Utensils",
-    image: "/images/cs3.jpg",
-    link: "/category/utensils",
-  },
-  {
-    title: "Storage",
-    image: "/images/cs4.jpg",
-    link: "/category/storage",
-  },
-];
-
-export default function CategoryAccordion() {
+const CategoryAccordion = () => {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [activeIndex, setActiveIndex] = useState(2); // default open panel
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch(`${API_URL}/home-category`);
+        const result = await response.json();
+        setData(result);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  if (loading) {
+    return (
+      <section className="category-section">
+        <div className="heading-glow"></div>
+        <h2 className="category-heading">Loading...</h2>
+      </section>
+    );
+  }
+
+  if (!data) return null;
+
+  // Sort categories by order
+  const categories = [...data.categories].sort((a, b) => a.order - b.order);
 
   return (
     <section className="category-section">
       <div className="heading-glow"></div>
-      <h2 className="category-heading">Shop by Category</h2>
+      <h2 className="category-heading">{data.title}</h2>
 
       <div className="accordion-wrapper">
         {categories.map((item, index) => {
@@ -46,23 +52,23 @@ export default function CategoryAccordion() {
               className={`accordion-item ${isActive ? "active" : ""}`}
               onMouseEnter={() => setActiveIndex(index)}
               onClick={() => setActiveIndex(index)}
-              style={{ backgroundImage: `url(${item.image})` }}
+              style={{ backgroundImage: `url(${STORAGE_URL}/${item.image})` }}
             >
               <div className="overlay"></div>
 
               {/* Collapsed state: vertical title */}
               {!isActive && (
-                <span className="vertical-title">{item.title}</span>
+                <span className="vertical-title">{item.name}</span>
               )}
 
               {/* Expanded state: full info */}
               {isActive && (
                 <div className="active-content">
-                  <span className="collection-label">COLLECTIONS</span>
-                  <h3 className="active-title">{item.title}</h3>
-                  <a href={item.link} className="shop-now-btn">
-                    SHOP NOW <span className="arrow">↗</span>
-                  </a>
+                  <span className="collection-label">{data.subtitle}</span>
+                  <h3 className="active-title">{item.name}</h3>
+                  <Link to={item.link} className="shop-now-btn">
+                    {item.buttonText || "SHOP NOW"} <span className="arrow">↗</span>
+                  </Link>
                 </div>
               )}
             </div>
@@ -71,4 +77,6 @@ export default function CategoryAccordion() {
       </div>
     </section>
   );
-}
+};
+
+export default CategoryAccordion;
