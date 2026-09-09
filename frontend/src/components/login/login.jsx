@@ -1,8 +1,13 @@
+// src/components/login/login.jsx
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { login } from "../../services/authService";
 import "./login.css";
 
 const Login = () => {
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
@@ -13,12 +18,29 @@ const Login = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    if (error) setError("");
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Login data:", { ...formData, rememberMe });
-    // API call yahan add karna
+    setLoading(true);
+    setError("");
+
+    try {
+      const result = await login(formData.email, formData.password);
+      
+      // ✅ Token automatically save ho jayega authService mein
+      // ✅ Yahan sirf response check karna hai
+      if (result.token) {
+        navigate("/");
+      } else {
+        setError(result.message || "Invalid email or password");
+      }
+    } catch (err) {
+      setError(err.message || "Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -41,6 +63,9 @@ const Login = () => {
         <div className="login-divider">
           <span></span>
         </div>
+
+        {/* Error Message */}
+        {error && <div className="auth-error">{error}</div>}
 
         {/* Form */}
         <form className="login-form" onSubmit={handleSubmit}>
@@ -160,8 +185,8 @@ const Login = () => {
             </Link>
           </div>
 
-          <button type="submit" className="login-btn">
-            LOGIN
+          <button type="submit" className="login-btn" disabled={loading}>
+            {loading ? "LOGGING IN..." : "LOGIN"}
           </button>
         </form>
 

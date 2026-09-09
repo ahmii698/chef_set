@@ -1,3 +1,4 @@
+// src/components/checkout/CheckoutPage.jsx
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import CheckoutFlow from "./CheckoutFlow";
@@ -33,7 +34,7 @@ export default function CheckoutPage() {
 
   return (
     <div className="checkout-page">
-      <CheckoutFlow cartItems={cartItems} />
+      <CheckoutFlow />
     </div>
   );
 }

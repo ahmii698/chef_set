@@ -35,7 +35,12 @@ import AdminCategories from './admin/pages/category';
 import AdminTestimonials from './admin/pages/Testimonials';
 import AdminFAQ from './admin/pages/Faq';
 import AdminAboutUs from './admin/pages/About_us';
-import ProtectedRoute from './admin/components/ProtectedRoute';
+
+// ✅ User Protected Route
+import UserProtectedRoute from './components/ProtectedRoute';
+
+// ✅ Admin Protected Route
+import AdminProtectedRoute from './admin/components/ProtectedRoute';
 
 // Routes jinke liye Header/Footer NAHI chahiye (standalone pages)
 const NO_LAYOUT_ROUTES = ['/login', '/create-account', '/forgot-password'];
@@ -58,84 +63,115 @@ function AppContent() {
           <Route path="/faq" element={<FAQ />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/trackorder" element={<TrackOrder />} />
-          <Route path="/cart" element={<Cart />} />
-          <Route path="/wishlist" element={<Wishlist />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/checkout" element={<CheckoutPage />} />
+          
+          {/* ---------- AUTH ROUTES (No Header/Footer) ---------- */}
           <Route path="/login" element={<Login />} />
           <Route path="/create-account" element={<CreateAccount />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
 
+          {/* ---------- USER PROTECTED ROUTES ---------- */}
+          <Route
+            path="/cart"
+            element={
+              <UserProtectedRoute>
+                <Cart />
+              </UserProtectedRoute>
+            }
+          />
+          <Route
+            path="/wishlist"
+            element={
+              <UserProtectedRoute>
+                <Wishlist />
+              </UserProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <UserProtectedRoute>
+                <Profile />
+              </UserProtectedRoute>
+            }
+          />
+          <Route
+            path="/checkout"
+            element={
+              <UserProtectedRoute>
+                <CheckoutPage />
+              </UserProtectedRoute>
+            }
+          />
+
           {/* ---------- Admin Routes ---------- */}
-          {/* /admin aur /admin/login dono se login page hi khulega */}
           <Route path="/admin" element={<Navigate to="/admin/login" replace />} />
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin/forgot-password" element={<AdminForgotPassword />} />
           <Route path="/admin/create-account" element={<AdminCreateAccount />} />
 
-          {/* Login ke baad yeh saare routes accessible hongay (protected) */}
+          {/* Admin Protected Routes */}
           <Route
             path="/admin/dashboard"
             element={
-              <ProtectedRoute>
+              <AdminProtectedRoute>
                 <AdminDashboard />
-              </ProtectedRoute>
+              </AdminProtectedRoute>
             }
           />
           <Route
             path="/admin/products"
             element={
-              <ProtectedRoute>
+              <AdminProtectedRoute>
                 <AdminProducts />
-              </ProtectedRoute>
+              </AdminProtectedRoute>
             }
           />
           <Route
             path="/admin/orders"
             element={
-              <ProtectedRoute>
+              <AdminProtectedRoute>
                 <AdminOrders />
-              </ProtectedRoute>
+              </AdminProtectedRoute>
             }
           />
           <Route
             path="/admin/customers"
             element={
-              <ProtectedRoute>
+              <AdminProtectedRoute>
                 <AdminCustomers />
-              </ProtectedRoute>
+              </AdminProtectedRoute>
             }
           />
           <Route
             path="/admin/categories"
             element={
-              <ProtectedRoute>
+              <AdminProtectedRoute>
                 <AdminCategories />
-              </ProtectedRoute>
+              </AdminProtectedRoute>
             }
           />
           <Route
             path="/admin/testimonials"
             element={
-              <ProtectedRoute>
+              <AdminProtectedRoute>
                 <AdminTestimonials />
-              </ProtectedRoute>
+              </AdminProtectedRoute>
             }
           />
           <Route
             path="/admin/faq"
             element={
-              <ProtectedRoute>
+              <AdminProtectedRoute>
                 <AdminFAQ />
-              </ProtectedRoute>
+              </AdminProtectedRoute>
             }
           />
           <Route
             path="/admin/about-us"
             element={
-              <ProtectedRoute>
+              <AdminProtectedRoute>
                 <AdminAboutUs />
-              </ProtectedRoute>
+              </AdminProtectedRoute>
             }
           />
         </Routes>

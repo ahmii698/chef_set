@@ -377,3 +377,62 @@
     gap: 8px;
   }
 }
+/* src/components/wishlist/wishlist.css - Add at the top */
+
+/* ===== EMPTY WISHLIST ===== */
+.wl-empty-container {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: #141414;
+  border-radius: 12px;
+}
+
+.wl-empty-icon {
+  color: #e8a33c;
+  margin-bottom: 1.5rem;
+  opacity: 0.6;
+}
+
+.wl-empty-title {
+  color: #ffffff;
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.8rem;
+}
+
+.wl-empty-desc {
+  color: #888888;
+  font-size: 1.05rem;
+  max-width: 500px;
+  margin: 0 auto 2rem;
+  line-height: 1.6;
+}
+
+.wl-empty-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: #e8a33c;
+  color: #0a0a0a;
+  border: none;
+  padding: 0.8rem 2.5rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.wl-empty-btn:hover {
+  background: #f0b458;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(232, 163, 60, 0.3);
+}
+
+.wl-empty-btn-icon {
+  transition: transform 0.3s ease;
+}
+
+.wl-empty-btn:hover .wl-empty-btn-icon {
+  transform: translateX(4px);
+}

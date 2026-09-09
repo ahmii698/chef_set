@@ -1,3 +1,4 @@
+// src/components/checkout/payment.jsx
 import React, { useState } from "react";
 import {
   FaCreditCard,
@@ -26,7 +27,13 @@ const TABS = [
   { id: "mobile", label: "Mobile Banking", icon: FaMobileAlt },
 ];
 
-export default function Payment({ orderId, total = 0, onContinue, onBack }) {
+export default function Payment({ 
+  orderId, 
+  total = 0, 
+  onContinue, 
+  onBack,
+  orderData = null 
+}) {
   const [activeTab, setActiveTab] = useState("bank");
   const [copied, setCopied] = useState(false);
 

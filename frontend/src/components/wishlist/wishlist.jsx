@@ -1,5 +1,5 @@
 // src/components/wishlist/wishlist.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   FiTrash2,
@@ -11,9 +11,38 @@ import {
   FiHeadphones,
   FiArrowRight,
 } from "react-icons/fi";
-import { getWishlist, saveWishlist, removeFromWishlist } from "../../utils/wishlist";
+import { getWishlist, removeFromWishlist } from "../../utils/wishlist";
+import { STORAGE_URL } from "../../../config";
 import "./wishlist.css";
 
+// ===== CART UTILITIES =====
+function getCart() {
+  try {
+    return JSON.parse(localStorage.getItem("cart")) || [];
+  } catch {
+    return [];
+  }
+}
+
+function saveCart(cart) {
+  localStorage.setItem("cart", JSON.stringify(cart));
+  window.dispatchEvent(new Event("cart-updated"));
+}
+
+function addItemsToCart(items) {
+  const cart = getCart();
+  items.forEach((item) => {
+    const existing = cart.find((c) => c.id === item.id);
+    if (existing) {
+      existing.qty += 1;
+    } else {
+      cart.push({ ...item, qty: 1 });
+    }
+  });
+  saveCart(cart);
+}
+
+// ===== FEATURES =====
 const features = [
   {
     icon: FiShield,
@@ -37,63 +66,88 @@ const features = [
   },
 ];
 
-function getCart() {
-  try {
-    return JSON.parse(localStorage.getItem("cart")) || [];
-  } catch {
-    return [];
-  }
-}
-
-function saveCart(cart) {
-  localStorage.setItem("cart", JSON.stringify(cart));
-}
-
-function addItemsToCart(items) {
-  const cart = getCart();
-  items.forEach((item) => {
-    const existing = cart.find((c) => c.id === item.id);
-    if (existing) {
-      existing.qty += 1;
-    } else {
-      cart.push({ ...item, qty: 1 });
-    }
-  });
-  saveCart(cart);
-}
-
 function Wishlist() {
   const navigate = useNavigate();
-  const [items, setItems] = useState(() => getWishlist());
+  const [items, setItems] = useState([]);
   const [toast, setToast] = useState("");
+
+  // Load wishlist on mount
+  useEffect(() => {
+    setItems(getWishlist());
+    
+    const handleWishlistUpdate = () => {
+      setItems(getWishlist());
+    };
+    
+    window.addEventListener("wishlist-updated", handleWishlistUpdate);
+    window.addEventListener("storage", handleWishlistUpdate);
+    
+    return () => {
+      window.removeEventListener("wishlist-updated", handleWishlistUpdate);
+      window.removeEventListener("storage", handleWishlistUpdate);
+    };
+  }, []);
 
   const showToast = (message) => {
     setToast(message);
     setTimeout(() => setToast(""), 2500);
   };
 
+  // ✅ REMOVE from wishlist
   const handleRemove = (id) => {
     const updated = removeFromWishlist(id);
     setItems(updated);
+    showToast("Item removed from wishlist");
   };
 
+  // ✅ ADD TO CART + REMOVE FROM WISHLIST
   const handleAddToCart = (item) => {
+    // Add to cart
     addItemsToCart([item]);
+    
+    // Remove from wishlist
     const updated = removeFromWishlist(item.id);
     setItems(updated);
-    showToast(`${item.name} added to cart`);
+    
+    showToast(`${item.name} moved to cart 🛒`);
   };
 
+  // ✅ MOVE ALL TO CART
   const handleMoveAllToCart = () => {
     if (items.length === 0) return;
+    
+    // Add all to cart
     addItemsToCart(items);
-    saveWishlist([]);
+    
+    // Clear wishlist
+    items.forEach(item => removeFromWishlist(item.id));
     setItems([]);
-    showToast("All items moved to cart");
+    
+    showToast("All items moved to cart 🛒");
   };
 
   const handleContinueShopping = () => {
     navigate("/products");
+  };
+
+  // ✅ EMPTY WISHLIST
+  const renderEmptyWishlist = () => {
+    return (
+      <div className="wl-empty-container">
+        <div className="wl-empty-icon">
+          <FiHeart size={48} />
+        </div>
+        <h2 className="wl-empty-title">Your wishlist is empty</h2>
+        <p className="wl-empty-desc">
+          Start adding your favorite products to your wishlist.
+          Discover premium kitchen equipment trusted by professionals worldwide.
+        </p>
+        <button className="wl-empty-btn" onClick={handleContinueShopping}>
+          Start Shopping
+          <FiArrowRight className="wl-empty-btn-icon" />
+        </button>
+      </div>
+    );
   };
 
   return (
@@ -109,105 +163,111 @@ function Wishlist() {
             <span className="wl-breadcrumb-active">Wishlist</span>
           </div>
         </div>
-        <div className="wl-header-actions">
-          <button
-            className="wl-btn wl-btn-primary"
-            onClick={handleMoveAllToCart}
-            disabled={items.length === 0}
-          >
-            <FiShoppingCart size={16} />
-            Move All to Cart
-          </button>
-        </div>
+        {items.length > 0 && (
+          <div className="wl-header-actions">
+            <button
+              className="wl-btn wl-btn-primary"
+              onClick={handleMoveAllToCart}
+              disabled={items.length === 0}
+            >
+              <FiShoppingCart size={16} />
+              Move All to Cart
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="wl-card">
-        {items.length === 0 ? (
-          <div className="wl-empty">
-            <FiHeart size={28} />
-            <p>Your wishlist is empty.</p>
-            <button className="wl-btn wl-btn-primary" onClick={handleContinueShopping}>
-              Browse Products
-            </button>
-          </div>
-        ) : (
-          <table className="wl-table">
-            <thead>
-              <tr>
-                <th>Product</th>
-                <th>Price</th>
-                <th>Availability</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.map((item) => (
-                <tr key={item.id}>
-                  <td>
-                    <div className="wl-product-cell">
-                      <img
-                        src={item.image}
-                        alt={item.name}
-                        className="wl-product-thumb"
-                      />
-                      <div>
-                        <div className="wl-product-name">{item.name}</div>
-                        <div className="wl-product-desc">{item.desc}</div>
-                        <div className="wl-stock-tag">
-                          <span className="wl-stock-dot" />
-                          In Stock
-                        </div>
-                      </div>
-                    </div>
-                  </td>
-                  <td>
-                    <span className="wl-price">${item.price.toFixed(2)}</span>
-                  </td>
-                  <td>
-                    <div className="wl-availability">
-                      <span className="wl-availability-status">In Stock</span>
-                      <span className="wl-availability-shipping">
-                        {item.shipping}
-                      </span>
-                    </div>
-                  </td>
-                  <td>
-                    <div className="wl-actions-cell">
-                      <button
-                        className="wl-icon-btn"
-                        onClick={() => handleRemove(item.id)}
-                        aria-label="Remove from wishlist"
-                      >
-                        <FiTrash2 size={16} />
-                      </button>
-                      <button
-                        className="wl-btn wl-btn-primary wl-btn-sm"
-                        onClick={() => handleAddToCart(item)}
-                      >
-                        <FiShoppingCart size={14} />
-                        Add to Cart
-                      </button>
-                    </div>
-                  </td>
+        {/* ✅ IF WISHLIST EMPTY */}
+        {items.length === 0 ? renderEmptyWishlist() : (
+          <>
+            <table className="wl-table">
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>Price</th>
+                  <th>Availability</th>
+                  <th>Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
+              </thead>
+              <tbody>
+                {items.map((item) => {
+                  const imageSrc = item.image?.startsWith('http') 
+                    ? item.image 
+                    : `${STORAGE_URL}/${item.image}`;
 
-        <div className="wl-features-row">
-          {features.map((f) => (
-            <div className="wl-feature-item" key={f.title}>
-              <div className="wl-feature-icon">
-                <f.icon size={20} />
-              </div>
-              <div>
-                <div className="wl-feature-title">{f.title}</div>
-                <div className="wl-feature-desc">{f.desc}</div>
-              </div>
+                  return (
+                    <tr key={item.id}>
+                      <td>
+                        <div className="wl-product-cell">
+                          <img
+                            src={imageSrc}
+                            alt={item.name}
+                            className="wl-product-thumb"
+                            onError={(e) => {
+                              e.target.src = '/images/placeholder.png';
+                            }}
+                          />
+                          <div>
+                            <div className="wl-product-name">{item.name}</div>
+                            <div className="wl-product-desc">{item.desc}</div>
+                            <div className="wl-stock-tag">
+                              <span className="wl-stock-dot" />
+                              In Stock
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <span className="wl-price">PKR {item.price.toLocaleString()}</span>
+                      </td>
+                      <td>
+                        <div className="wl-availability">
+                          <span className="wl-availability-status">In Stock</span>
+                          <span className="wl-availability-shipping">
+                            {item.shipping || "Ships in 1-2 days"}
+                          </span>
+                        </div>
+                      </td>
+                      <td>
+                        <div className="wl-actions-cell">
+                          <button
+                            className="wl-icon-btn"
+                            onClick={() => handleRemove(item.id)}
+                            aria-label="Remove from wishlist"
+                          >
+                            <FiTrash2 size={16} />
+                          </button>
+                          <button
+                            className="wl-btn wl-btn-primary wl-btn-sm"
+                            onClick={() => handleAddToCart(item)}
+                          >
+                            <FiShoppingCart size={14} />
+                            Add to Cart
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+
+            <div className="wl-features-row">
+              {features.map((f) => (
+                <div className="wl-feature-item" key={f.title}>
+                  <div className="wl-feature-icon">
+                    <f.icon size={20} />
+                  </div>
+                  <div>
+                    <div className="wl-feature-title">{f.title}</div>
+                    <div className="wl-feature-desc">{f.desc}</div>
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
+          </>
+        )}
       </div>
 
       <div className="wl-footer">

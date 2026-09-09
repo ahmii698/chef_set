@@ -1,13 +1,21 @@
-import React, { useState } from "react";
+// src/components/checkout/checkout.jsx
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { API_URL } from "../../../config";
 import "./checkout.css";
 
-export default function Checkout({
-  cartItems = [],
-  subtotal = 0,
-  shipping = 0,
-  total = 0,
-  onSubmit,
-}) {
+export default function Checkout({ onSubmit, loading: parentLoading, error: parentError }) {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [localLoading, setLocalLoading] = useState(false);
+  const [localError, setLocalError] = useState("");
+
+  // Cart items from navigation state
+  const cartItems = location.state?.cartItems || [];
+  const [subtotal, setSubtotal] = useState(0);
+  const [shipping, setShipping] = useState(0);
+  const [total, setTotal] = useState(0);
+
   const [form, setForm] = useState({
     fullName: "",
     email: "",
@@ -20,9 +28,19 @@ export default function Checkout({
   });
   const [errors, setErrors] = useState({});
 
+  // Calculate totals
+  useEffect(() => {
+    const sub = cartItems.reduce((sum, item) => sum + item.price * item.qty, 0);
+    setSubtotal(sub);
+    setTotal(sub + shipping);
+  }, [cartItems, shipping]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: "" }));
+    }
   };
 
   const validate = () => {
@@ -43,8 +61,21 @@ export default function Checkout({
       return;
     }
     setErrors({});
-    onSubmit && onSubmit(form);
+    // ✅ Parent component ke onSubmit ko call karo
+    if (onSubmit) {
+      onSubmit(form);
+    }
   };
+
+  // Agar cart empty hai toh products page pe bhejo
+  useEffect(() => {
+    if (cartItems.length === 0 && !localLoading) {
+      navigate('/products');
+    }
+  }, [cartItems, localLoading, navigate]);
+
+  const isLoading = parentLoading || localLoading;
+  const displayError = parentError || localError;
 
   return (
     <div className="billing-page">
@@ -53,6 +84,8 @@ export default function Checkout({
           <h1>Billing Details</h1>
           <p>Fill in your information to complete the order</p>
         </div>
+
+        {displayError && <div className="error-message">{displayError}</div>}
 
         <form onSubmit={handleSubmit} noValidate>
           <div className="form-group">
@@ -66,6 +99,7 @@ export default function Checkout({
               value={form.fullName}
               onChange={handleChange}
               placeholder="Your full name"
+              required
             />
             {errors.fullName && <span className="error-text">{errors.fullName}</span>}
           </div>
@@ -81,6 +115,7 @@ export default function Checkout({
               value={form.email}
               onChange={handleChange}
               placeholder="you@example.com"
+              required
             />
             {errors.email && <span className="error-text">{errors.email}</span>}
           </div>
@@ -96,6 +131,7 @@ export default function Checkout({
               value={form.phone}
               onChange={handleChange}
               placeholder="03XX-XXXXXXX"
+              required
             />
             {errors.phone && <span className="error-text">{errors.phone}</span>}
           </div>
@@ -111,6 +147,7 @@ export default function Checkout({
               value={form.address}
               onChange={handleChange}
               placeholder="House #, Street, Area"
+              required
             />
             {errors.address && <span className="error-text">{errors.address}</span>}
           </div>
@@ -127,6 +164,7 @@ export default function Checkout({
                 value={form.city}
                 onChange={handleChange}
                 placeholder="Karachi"
+                required
               />
               {errors.city && <span className="error-text">{errors.city}</span>}
             </div>
@@ -172,8 +210,8 @@ export default function Checkout({
             />
           </div>
 
-          <button type="submit" className="btn-primary">
-            Proceed to Payment →
+          <button type="submit" className="btn-primary" disabled={isLoading}>
+            {isLoading ? "PLACING ORDER..." : "Proceed to Payment →"}
           </button>
         </form>
       </div>

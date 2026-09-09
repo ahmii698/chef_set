@@ -1,9 +1,14 @@
+// src/components/login/create_account.jsx
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { register } from "../../services/authService";
 import "./create_account.css";
 
 const CreateAccount = () => {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(false);
@@ -17,25 +22,57 @@ const CreateAccount = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    if (error) setError("");
+    if (success) setSuccess("");
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (formData.password !== formData.confirmPassword) {
-      alert("Passwords do not match");
+      setError("Passwords do not match");
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      setError("Password must be at least 6 characters");
       return;
     }
 
     if (!agreeTerms) {
-      alert("Please agree to the Terms & Conditions");
+      setError("Please agree to the Terms & Conditions");
       return;
     }
 
-    console.log("Create account data:", formData);
-    // API call yahan add karna — success ke baad hi navigate karna
+    setLoading(true);
+    setError("");
+    setSuccess("");
 
-    navigate("/login");
+    try {
+      const result = await register(
+        formData.fullName,
+        formData.email,
+        formData.password
+      );
+
+      if (result.message) {
+        setSuccess(result.message);
+        setFormData({
+          fullName: "",
+          email: "",
+          password: "",
+          confirmPassword: "",
+        });
+        setAgreeTerms(false);
+        setTimeout(() => navigate("/login"), 2000);
+      } else {
+        setError(result.message || "Something went wrong");
+      }
+    } catch (err) {
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -58,6 +95,10 @@ const CreateAccount = () => {
         <div className="create-account-divider">
           <span></span>
         </div>
+
+        {/* Error & Success Messages */}
+        {error && <div className="auth-error">{error}</div>}
+        {success && <div className="auth-success">{success}</div>}
 
         {/* Form */}
         <form className="create-account-form" onSubmit={handleSubmit}>
@@ -273,8 +314,8 @@ const CreateAccount = () => {
             </span>
           </label>
 
-          <button type="submit" className="create-account-btn">
-            CREATE ACCOUNT
+          <button type="submit" className="create-account-btn" disabled={loading}>
+            {loading ? "CREATING..." : "CREATE ACCOUNT"}
           </button>
         </form>
 

@@ -1,4 +1,6 @@
-import React from "react";
+// src/components/checkout/orderPlaced.jsx
+import React, { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   FaHourglassHalf,
   FaEnvelope,
@@ -9,7 +11,42 @@ import {
 } from "react-icons/fa";
 import "./orderPlaced.css";
 
-export default function OrderPlaced({ orderId, onTrackOrder, onContinueShopping }) {
+export default function OrderPlaced({ 
+  orderId, 
+  onTrackOrder, 
+  onContinueShopping, 
+  orderData 
+}) {
+  const navigate = useNavigate();
+
+  // Agar orderId nahi hai toh products page pe bhejo
+  useEffect(() => {
+    if (!orderId) {
+      navigate('/products');
+    }
+  }, [orderId, navigate]);
+
+  if (!orderId) return null;
+
+  // Use orderData or fallback to orderId
+  const displayOrderId = orderData?.orderId || orderId;
+
+  const handleTrackOrder = () => {
+    if (onTrackOrder) {
+      onTrackOrder();
+    } else {
+      navigate(`/trackorder?order=${displayOrderId}`);
+    }
+  };
+
+  const handleContinueShopping = () => {
+    if (onContinueShopping) {
+      onContinueShopping();
+    } else {
+      navigate('/products');
+    }
+  };
+
   return (
     <div className="placed-page">
       <div className="placed-card">
@@ -20,7 +57,7 @@ export default function OrderPlaced({ orderId, onTrackOrder, onContinueShopping 
 
         <div className="order-id-pill">
           <span>Order ID:</span>
-          <strong>{orderId}</strong>
+          <strong>{displayOrderId}</strong>
         </div>
 
         <p className="placed-success">Your order has been placed successfully!</p>
@@ -58,10 +95,10 @@ export default function OrderPlaced({ orderId, onTrackOrder, onContinueShopping 
         </div>
 
         <div className="placed-actions">
-          <button className="btn-primary" type="button" onClick={onTrackOrder}>
+          <button className="btn-primary" type="button" onClick={handleTrackOrder}>
             Track Order →
           </button>
-          <button className="btn-secondary" type="button" onClick={onContinueShopping}>
+          <button className="btn-secondary" type="button" onClick={handleContinueShopping}>
             <FaShoppingBag /> Continue Shopping
           </button>
         </div>

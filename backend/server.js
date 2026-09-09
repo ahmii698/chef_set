@@ -11,8 +11,11 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// ==================== STATIC FILES (IMAGES) ====================
+// ==================== STATIC FILES ====================
+// Images
 app.use('/storage', express.static(path.join(__dirname, 'public/images')));
+// Uploads (payment proofs)
+app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 
 // ==================== MongoDB CONNECTION ====================
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/chefsetDB')
@@ -69,6 +72,12 @@ app.use('/api/newsletter', require('./routes/newsletter'));
 // Contact Message Route
 app.use('/api/contact-message', require('./routes/contactMessage'));
 
+// Auth Route
+app.use('/api/auth', require('./routes/auth'));
+
+// Orders Route
+app.use('/api/orders', require('./routes/orders'));
+
 // ==================== ERROR HANDLING ====================
 app.use((err, req, res, next) => {
   console.error('❌ Error:', err.stack);
@@ -92,6 +101,7 @@ app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
   console.log(`📦 Database: chefsetDB`);
   console.log(`📁 Storage: http://localhost:${PORT}/storage`);
+  console.log(`📁 Uploads: http://localhost:${PORT}/uploads`);
   console.log(`📋 Routes:`);
   console.log(`   - /api/products`);
   console.log(`   - /api/about-header`);
@@ -113,4 +123,6 @@ app.listen(PORT, () => {
   console.log(`   - /api/contact`);
   console.log(`   - /api/newsletter`);
   console.log(`   - /api/contact-message`);
+  console.log(`   - /api/auth`);
+  console.log(`   - /api/orders`);
 });

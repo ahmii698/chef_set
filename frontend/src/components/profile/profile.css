@@ -169,20 +169,39 @@
   color: #fff;
 }
 
-.pr-link-btn {
-  display: inline-flex;
+/* ✅ ORDERS HEADING - widths/gap now match .pr-order-row exactly */
+.pr-orders-heading {
+  display: flex;
   align-items: center;
-  gap: 4px;
-  background: transparent;
-  border: none;
-  color: #e6a730;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
+  gap: 14px;
+  padding: 10px 20px;
+  background: #1a1a1a;
+  border-bottom: 1px solid #2a2a2a;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #888;
 }
 
-.pr-link-btn:hover {
-  color: #f0b458;
+.pr-orders-heading-id {
+  flex: 1;
+}
+
+.pr-orders-heading-status {
+  width: 100px;
+  text-align: center;
+}
+
+.pr-orders-heading-total {
+  width: 100px;
+  text-align: right;
+}
+
+/* spacer matches the arrow icon column in .pr-order-row so Total lines up */
+.pr-orders-heading-spacer {
+  width: 16px;
+  flex-shrink: 0;
 }
 
 /* Orders */
@@ -209,6 +228,7 @@
 
 .pr-order-info {
   flex: 1;
+  min-width: 0;
 }
 
 .pr-order-id {
@@ -228,8 +248,10 @@
   font-weight: 600;
   padding: 4px 10px;
   border-radius: 20px;
-  margin-right: 16px;
   white-space: nowrap;
+  width: 100px;
+  box-sizing: border-box;
+  text-align: center;
 }
 
 .pr-status-delivered {
@@ -247,15 +269,38 @@
   color: #e6a730;
 }
 
+.pr-status-pending {
+  background: rgba(255, 152, 0, 0.15);
+  color: #ff9800;
+}
+
+.pr-status-cancelled {
+  background: rgba(244, 67, 54, 0.15);
+  color: #f44336;
+}
+
 .pr-order-price {
   font-size: 13px;
   font-weight: 600;
   color: #fff;
-  margin-right: 8px;
+  width: 100px;
+  box-sizing: border-box;
+  text-align: right;
 }
 
 .pr-order-arrow {
   color: #666;
+  width: 16px;
+  min-width: 16px;
+  flex-shrink: 0;
+}
+
+/* No orders */
+.pr-no-orders {
+  padding: 30px 20px;
+  text-align: center;
+  color: #666;
+  font-size: 14px;
 }
 
 /* Settings */
@@ -354,6 +399,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  font-size: 24px;
+  font-weight: 700;
 }
 
 .pr-avatar-btn {
@@ -395,12 +442,47 @@
   border-color: #e6a730;
 }
 
+.pr-input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.pr-field-note {
+  font-size: 11px;
+  color: #666;
+  margin-top: 4px;
+}
+
 .pr-form-actions {
   margin-top: 8px;
 }
 
 .pr-form-actions .pr-btn {
   width: auto;
+}
+
+/* Success & Error Messages */
+.pr-success-message {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: rgba(76, 175, 80, 0.1);
+  border: 1px solid #4caf50;
+  border-radius: 6px;
+  color: #4caf50;
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+
+.pr-error-message {
+  padding: 10px 14px;
+  background: rgba(244, 67, 54, 0.1);
+  border: 1px solid #f44336;
+  border-radius: 6px;
+  color: #f44336;
+  font-size: 13px;
+  margin-bottom: 16px;
 }
 
 /* Help footer */
@@ -447,6 +529,16 @@
   margin-top: 2px;
 }
 
+/* Loading */
+.pr-loading {
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #e6a730;
+  font-size: 16px;
+}
+
 /* Responsive */
 @media (max-width: 1000px) {
   .pr-stats-row {
@@ -474,8 +566,19 @@
   .pr-order-row {
     flex-wrap: wrap;
   }
+  .pr-orders-heading {
+    display: none;
+  }
   .pr-order-thumb {
     width: 36px;
     height: 36px;
+  }
+  .pr-status-badge {
+    width: auto;
+    font-size: 10px;
+    padding: 3px 8px;
+  }
+  .pr-order-price {
+    width: auto;
   }
 }

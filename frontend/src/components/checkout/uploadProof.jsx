@@ -1,13 +1,18 @@
+// src/components/checkout/uploadProof.jsx
 import React, { useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { API_URL } from "../../../config";
 import "./uploadProof.css";
 
 const MAX_SIZE_MB = 5;
 
-export default function UploadProof({ orderId, total = 0, onSubmitted, onSkip }) {
+export default function UploadProof({ orderId, total = 0, onSubmitted, onSkip, orderData = null }) {
+  const navigate = useNavigate();
   const fileInputRef = useRef(null);
   const [file, setFile] = useState(null);
   const [dragActive, setDragActive] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   const validateAndSetFile = (selected) => {
@@ -38,16 +43,66 @@ export default function UploadProof({ orderId, total = 0, onSubmitted, onSkip })
       setError("Please upload your payment screenshot");
       return;
     }
+
+    // ✅ CHECK: orderId exists?
+    if (!orderId) {
+      setError("Order ID is missing. Please go back and try again.");
+      return;
+    }
+
+    console.log('📤 Uploading proof for orderId:', orderId);
+    console.log('📤 API URL:', `${API_URL}/orders/upload-proof/${orderId}`);
+    console.log('📤 File name:', file.name);
+    console.log('📤 File size:', file.size);
+    console.log('📤 Order data:', orderData);
+
     setSubmitting(true);
-    // TODO: replace with real upload call, e.g.
-    // const formData = new FormData();
-    // formData.append("proof", file);
-    // formData.append("orderId", orderId);
-    // await fetch("/api/orders/upload-proof", { method: "POST", body: formData });
-    setTimeout(() => {
+    setError("");
+    setSuccess("");
+
+    try {
+      // Create FormData for file upload
+      const formData = new FormData();
+      formData.append("proof", file);
+
+      // ✅ REMOVED: formData.append("orderId", orderId) - already in URL
+
+      // Upload proof image
+      const uploadResponse = await fetch(`${API_URL}/orders/upload-proof/${orderId}`, {
+        method: 'POST',
+        body: formData,
+        // ✅ NO Content-Type header - browser sets it with boundary
+      });
+
+      console.log('📥 Upload response status:', uploadResponse.status);
+      const uploadData = await uploadResponse.json();
+      console.log('📥 Upload response data:', uploadData);
+
+      if (uploadResponse.ok) {
+        console.log('✅ Proof uploaded successfully!');
+        setSuccess("Payment proof uploaded successfully! ✅");
+        setTimeout(() => {
+          onSubmitted && onSubmitted();
+        }, 1000);
+      } else {
+        console.log('❌ Upload failed:', uploadData);
+        setError(uploadData.message || "Failed to upload proof");
+      }
+    } catch (err) {
+      console.error('❌ Upload error:', err);
+      setError("Network error. Please try again.");
+    } finally {
       setSubmitting(false);
-      onSubmitted && onSubmitted();
-    }, 700);
+    }
+  };
+
+  const handleSkip = () => {
+    console.log('⏭️ Skipping proof upload for order:', orderId);
+    if (onSkip) {
+      onSkip();
+    } else {
+      navigate(`/trackorder?order=${orderId}`);
+    }
   };
 
   return (
@@ -61,7 +116,7 @@ export default function UploadProof({ orderId, total = 0, onSubmitted, onSkip })
 
         <div className="order-id-box">
           <span className="label">Order ID</span>
-          <span className="value">{orderId}</span>
+          <span className="value">{orderId || 'Loading...'}</span>
           <span className="hint">Use this Order ID to track your order</span>
         </div>
 
@@ -76,6 +131,9 @@ export default function UploadProof({ orderId, total = 0, onSubmitted, onSkip })
         </div>
 
         <label className="field-label">Payment Screenshot *</label>
+
+        {error && <div className="error-message">{error}</div>}
+        {success && <div className="success-message">{success}</div>}
 
         <div
           className={`dropzone ${dragActive ? "active" : ""} ${file ? "has-file" : ""}`}
@@ -108,23 +166,21 @@ export default function UploadProof({ orderId, total = 0, onSubmitted, onSkip })
           )}
         </div>
 
-        {error && <span className="error-text">{error}</span>}
-
         <button
           className="btn-primary"
           type="button"
           onClick={handleSubmit}
           disabled={submitting}
         >
-          {submitting ? "Submitting..." : "Submit Proof →"}
+          {submitting ? "Uploading..." : "Submit Proof →"}
         </button>
 
-        <button className="skip-link" type="button" onClick={onSkip}>
+        <button className="skip-link" type="button" onClick={handleSkip}>
           Skip for now? Track your order later
         </button>
 
         <p className="support-text">
-          Need help? <a href="/support">Contact our support team</a>
+          Need help? <a href="/contact">Contact our support team</a>
         </p>
       </div>
     </div>

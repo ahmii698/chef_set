@@ -1,3 +1,4 @@
+// src/components/cart/cart.jsx
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -17,8 +18,10 @@ import {
   FaCcAmex,
   FaCcPaypal,
   FaCcDiscover,
+  FaShoppingCart,
 } from 'react-icons/fa';
 import { getCart, updateCartQty, removeFromCart } from '../../utils/cart';
+import { STORAGE_URL } from '../../../config';
 import './cart.css';
 
 const Cart = () => {
@@ -62,34 +65,35 @@ const Cart = () => {
     navigate('/products');
   };
 
-  // Yahan checkout page par navigate karte hain aur cart items
-  // ko "state" ke through saath bhejte hain, taake CheckoutFlow
-  // ke paas order summary banane ke liye data ho.
   const handleProceedToCheckout = () => {
     if (items.length === 0) return;
     navigate('/checkout', { state: { cartItems: items } });
   };
 
-  return (
-    <section className="cart-section">
-      {/* Header */}
-      <div className="cart-header">
-        <div>
-          <h1>YOUR CART</h1>
-          <div className="cart-breadcrumb">
-            <span>Home</span>
-            <span className="crumb-sep">›</span>
-            <span className="crumb-active">Cart</span>
-          </div>
+  // ✅ EMPTY CART HANDLER
+  const renderEmptyCart = () => {
+    return (
+      <div className="cart-empty-container">
+        <div className="cart-empty-icon">
+          <FaShoppingCart size={48} />
         </div>
-        <button className="btn-continue-shopping" onClick={handleContinueShopping}>
-          <FaArrowLeft />
-          CONTINUE SHOPPING
+        <h2 className="cart-empty-title">Your cart is empty</h2>
+        <p className="cart-empty-desc">
+          Looks like you haven't added any items to your cart yet.
+          Explore our premium collection and find the perfect tools for your kitchen.
+        </p>
+        <button className="cart-empty-btn" onClick={handleContinueShopping}>
+          Start Shopping
+          <FaArrowLeft className="cart-empty-btn-icon" />
         </button>
       </div>
+    );
+  };
 
-      <div className="cart-container">
-        {/* Left: Items Table */}
+  // ✅ CART WITH ITEMS
+  const renderCartItems = () => {
+    return (
+      <>
         <div className="cart-items-panel">
           <div className="cart-table-head">
             <span className="col-product">PRODUCT</span>
@@ -99,88 +103,95 @@ const Cart = () => {
           </div>
 
           <div className="cart-table-body">
-            {items.map((item) => (
-              <div className="cart-row" key={item.id}>
-                <div className="col-product cart-product-info">
-                  <div className="cart-product-img">
-                    <img src={item.image} alt={item.name} />
+            {items.map((item) => {
+              const imageSrc = item.image?.startsWith('http') 
+                ? item.image 
+                : `${STORAGE_URL}/${item.image}`;
+
+              return (
+                <div className="cart-row" key={item.id}>
+                  <div className="col-product cart-product-info">
+                    <div className="cart-product-img">
+                      <img 
+                        src={imageSrc} 
+                        alt={item.name}
+                        onError={(e) => {
+                          e.target.src = '/images/placeholder.png';
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <p className="cart-product-name">{item.name}</p>
+                      {item.desc && <p className="cart-product-desc">{item.desc}</p>}
+                      {item.inStock && (
+                        <span className="cart-stock-badge">
+                          <span className="stock-dot" />
+                          In Stock
+                        </span>
+                      )}
+                    </div>
                   </div>
-                  <div>
-                    <p className="cart-product-name">{item.name}</p>
-                    {item.desc && <p className="cart-product-desc">{item.desc}</p>}
-                    {item.inStock && (
-                      <span className="cart-stock-badge">
-                        <span className="stock-dot" />
-                        In Stock
-                      </span>
-                    )}
+
+                  <div className="col-price">PKR {item.price.toLocaleString()}</div>
+
+                  <div className="col-qty">
+                    <div className="qty-stepper">
+                      <button
+                        className="qty-btn"
+                        onClick={() => updateQty(item.id, -1)}
+                        aria-label="Decrease quantity"
+                      >
+                        <FaMinus />
+                      </button>
+                      <span className="qty-value">{item.qty}</span>
+                      <button
+                        className="qty-btn"
+                        onClick={() => updateQty(item.id, 1)}
+                        aria-label="Increase quantity"
+                      >
+                        <FaPlus />
+                      </button>
+                    </div>
                   </div>
-                </div>
 
-                <div className="col-price">${item.price.toFixed(2)}</div>
-
-                <div className="col-qty">
-                  <div className="qty-stepper">
-                    <button
-                      className="qty-btn"
-                      onClick={() => updateQty(item.id, -1)}
-                      aria-label="Decrease quantity"
-                    >
-                      <FaMinus />
-                    </button>
-                    <span className="qty-value">{item.qty}</span>
-                    <button
-                      className="qty-btn"
-                      onClick={() => updateQty(item.id, 1)}
-                      aria-label="Increase quantity"
-                    >
-                      <FaPlus />
-                    </button>
+                  <div className="col-total cart-row-total">
+                    PKR {(item.price * item.qty).toLocaleString()}
                   </div>
+
+                  <button
+                    className="cart-remove-btn"
+                    onClick={() => removeItem(item.id)}
+                    aria-label="Remove item"
+                  >
+                    <FaTrash />
+                  </button>
                 </div>
-
-                <div className="col-total cart-row-total">
-                  ${(item.price * item.qty).toFixed(2)}
-                </div>
-
-                <button
-                  className="cart-remove-btn"
-                  onClick={() => removeItem(item.id)}
-                  aria-label="Remove item"
-                >
-                  <FaTrash />
-                </button>
-              </div>
-            ))}
-
-            {items.length === 0 && (
-              <div className="cart-empty">Your cart is empty.</div>
-            )}
+              );
+            })}
           </div>
         </div>
 
-        {/* Right: Order Summary */}
         <div className="cart-summary-panel">
           <h3 className="cart-summary-title">ORDER SUMMARY</h3>
 
           <div className="summary-line">
             <span>Subtotal ({items.length} items)</span>
-            <span>${subtotal.toFixed(2)}</span>
+            <span>PKR {subtotal.toLocaleString()}</span>
           </div>
           <div className="summary-line">
             <span>
               Shipping <FaInfoCircle className="info-icon" />
             </span>
-            <span>${shipping.toFixed(2)}</span>
+            <span>PKR {shipping.toLocaleString()}</span>
           </div>
           <div className="summary-line">
             <span>Tax</span>
-            <span>${tax.toFixed(2)}</span>
+            <span>PKR {tax.toLocaleString()}</span>
           </div>
 
           <div className="summary-total-line">
             <span>TOTAL</span>
-            <span className="summary-total-value">${total.toFixed(2)}</span>
+            <span className="summary-total-value">PKR {total.toLocaleString()}</span>
           </div>
 
           <button
@@ -216,6 +227,33 @@ const Cart = () => {
             </div>
           </div>
         </div>
+      </>
+    );
+  };
+
+  return (
+    <section className="cart-section">
+      {/* Header */}
+      <div className="cart-header">
+        <div>
+          <h1>YOUR CART</h1>
+          <div className="cart-breadcrumb">
+            <span>Home</span>
+            <span className="crumb-sep">›</span>
+            <span className="crumb-active">Cart</span>
+          </div>
+        </div>
+        {items.length > 0 && (
+          <button className="btn-continue-shopping" onClick={handleContinueShopping}>
+            <FaArrowLeft />
+            CONTINUE SHOPPING
+          </button>
+        )}
+      </div>
+
+      <div className="cart-container">
+        {/* ✅ IF CART EMPTY - Show Empty Cart Message */}
+        {items.length === 0 ? renderEmptyCart() : renderCartItems()}
       </div>
 
       {/* Bottom Features Strip */}
