@@ -1,106 +1,18 @@
-import React, { useState, useRef } from "react";
+// src/admin/pages/Products.jsx
+import React, { useState, useEffect, useRef } from "react";
 import {
-  ArrowLeft,
-  Bold,
-  Italic,
-  Underline,
-  List as ListIcon,
-  ListOrdered,
-  Link as LinkIcon,
-  Image as ImageIcon,
-  Plus,
-  X,
-  Pencil,
-  Trash2,
-  Search,
-  Star,
-  ChevronDown,
-  ChevronLeft,
-  ChevronRight,
+  ArrowLeft, Bold, Italic, Underline, List as ListIcon,
+  ListOrdered, Link as LinkIcon, Image as ImageIcon,
+  Plus, X, Pencil, Trash2, Search, Star, ChevronDown,
+  ChevronLeft, ChevronRight, Eye
 } from "lucide-react";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
+import { getAdminToken } from "../services/adminAuthService";
+import { API_URL, STORAGE_URL } from "../../../config";
 import "./Products.css";
 
-const CATEGORIES = ["Cookware", "Knives", "Utensils", "Accessories", "Bakeware"];
-
-const initialProducts = [
-  {
-    id: 1,
-    name: "Stainless Steel Cookware Set",
-    shortDesc: "Premium quality cookware set",
-    description: "",
-    category: "Cookware",
-    price: 12500,
-    salePrice: 9999,
-    stock: 24,
-    sku: "",
-    status: "Active",
-    featured: true,
-    date: "May 30, 2025",
-    image: null,
-  },
-  {
-    id: 2,
-    name: "Chef Knife Set 6PCS",
-    shortDesc: "High quality stainless steel knives",
-    description: "",
-    category: "Knives",
-    price: 6800,
-    salePrice: 5499,
-    stock: 42,
-    sku: "",
-    status: "Active",
-    featured: true,
-    date: "May 29, 2025",
-    image: null,
-  },
-  {
-    id: 3,
-    name: "Non-Stick Frying Pan",
-    shortDesc: "Durable non-stick frying pan",
-    description: "",
-    category: "Cookware",
-    price: 3200,
-    salePrice: null,
-    stock: 68,
-    sku: "",
-    status: "Active",
-    featured: false,
-    date: "May 28, 2025",
-    image: null,
-  },
-  {
-    id: 4,
-    name: "Silicone Kitchen Utensils Set",
-    shortDesc: "Heat resistant silicone utensils",
-    description: "",
-    category: "Utensils",
-    price: 2450,
-    salePrice: null,
-    stock: 55,
-    sku: "",
-    status: "Inactive",
-    featured: false,
-    date: "May 26, 2025",
-    image: null,
-  },
-  {
-    id: 5,
-    name: "Wooden Cutting Board",
-    shortDesc: "Premium wooden cutting board",
-    description: "",
-    category: "Accessories",
-    price: 1750,
-    salePrice: null,
-    stock: 35,
-    sku: "",
-    status: "Active",
-    featured: false,
-    date: "May 25, 2025",
-    image: null,
-  },
-];
+const CATEGORIES = ["Cookware", "Knives", "Utensils", "Accessories", "Bakeware", "Storage", "Bowls"];
 
 const emptyForm = {
   name: "",
@@ -110,18 +22,19 @@ const emptyForm = {
   price: "",
   salePrice: "",
   stock: "",
-  sku: "",
   status: "Active",
   featured: false,
-  images: [], // { id, url }
+  images: [], // { id, url, file?, isExisting? }
   mainImageId: null,
 };
 
-const ITEMS_PER_PAGE = 5;
+const ITEMS_PER_PAGE = 8;
 
 const ProductsPage = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [products, setProducts] = useState(initialProducts);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState(emptyForm);
 
@@ -134,7 +47,32 @@ const ProductsPage = () => {
   const formTopRef = useRef(null);
   const listRef = useRef(null);
 
-  // ---------- Form field handlers ----------
+  // ===== FETCH PRODUCTS =====
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      const token = getAdminToken();
+      const response = await fetch(`${API_URL}/admin-products`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await response.json();
+      if (response.ok) {
+        setProducts(data);
+      } else {
+        console.error('Error:', data.message);
+      }
+    } catch (error) {
+      console.error('Fetch error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  // ===== FORM FIELD HANDLERS =====
   const handleFieldChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
@@ -144,7 +82,7 @@ const ProductsPage = () => {
     setForm((prev) => ({ ...prev, featured: !prev.featured }));
   };
 
-  // ---------- Image handlers ----------
+  // ===== IMAGE HANDLERS =====
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files || []);
     if (!files.length) return;
@@ -181,7 +119,79 @@ const ProductsPage = () => {
 
   const mainImage = form.images.find((img) => img.id === form.mainImageId) || null;
 
-  // ---------- Form submit / edit / cancel ----------
+  // ===== SUBMIT FORM =====
+  const handleSubmit = async () => {
+    if (!form.name || !form.category || !form.price || !form.stock) {
+      alert("Please fill all required fields (Name, Category, Price, Stock)");
+      return;
+    }
+
+    setSaving(true);
+
+    try {
+      const token = getAdminToken();
+      const formData = new FormData();
+
+      // Add text fields
+      formData.append('name', form.name);
+      formData.append('category', form.category);
+      formData.append('price', form.price);
+      if (form.salePrice) formData.append('salePrice', form.salePrice);
+      formData.append('stock', form.stock);
+      formData.append('status', form.status);
+      formData.append('shortDesc', form.shortDesc);
+      formData.append('description', form.description);
+      formData.append('featured', form.featured);
+
+      // Handle images
+      const existingImages = [];
+      let mainIndex = 0;
+
+      form.images.forEach((img, idx) => {
+        if (img.file) {
+          formData.append('images', img.file);
+        } else {
+          // Existing image (filename)
+          existingImages.push(img.url);
+        }
+        if (img.id === form.mainImageId) {
+          mainIndex = idx;
+        }
+      });
+
+      formData.append('existingImages', JSON.stringify(existingImages));
+      formData.append('mainImageIndex', mainIndex);
+
+      const url = editingId 
+        ? `${API_URL}/admin-products/${editingId}` 
+        : `${API_URL}/admin-products`;
+      
+      const method = editingId ? 'PUT' : 'POST';
+
+      const response = await fetch(url, {
+        method,
+        headers: { 'Authorization': `Bearer ${token}` },
+        body: formData
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert(data.message || 'Product saved successfully!');
+        resetForm();
+        fetchProducts();
+        listRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      } else {
+        alert(data.message || 'Something went wrong');
+      }
+    } catch (error) {
+      console.error('Save error:', error);
+      alert('Network error. Please try again.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const resetForm = () => {
     setForm(emptyForm);
     setEditingId(null);
@@ -191,96 +201,60 @@ const ProductsPage = () => {
     resetForm();
   };
 
-  const handleSubmit = () => {
-    if (!form.name || !form.category || !form.price || !form.stock) {
-      alert("Please fill all required fields (Product Name, Category, Price, Stock)");
-      return;
-    }
-
-    const mainUrl = mainImage ? mainImage.url : null;
-    const todayLabel = new Date().toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
-
-    if (editingId) {
-      // TODO: API call — update product on backend
-      setProducts((prev) =>
-        prev.map((p) =>
-          p.id === editingId
-            ? {
-                ...p,
-                name: form.name,
-                shortDesc: form.shortDesc,
-                description: form.description,
-                category: form.category,
-                price: Number(form.price),
-                salePrice: form.salePrice ? Number(form.salePrice) : null,
-                stock: Number(form.stock),
-                sku: form.sku,
-                status: form.status,
-                featured: form.featured,
-                image: mainUrl,
-              }
-            : p
-        )
-      );
-    } else {
-      // TODO: API call — create product on backend
-      const newProduct = {
-        id: Date.now(),
-        name: form.name,
-        shortDesc: form.shortDesc,
-        description: form.description,
-        category: form.category,
-        price: Number(form.price),
-        salePrice: form.salePrice ? Number(form.salePrice) : null,
-        stock: Number(form.stock),
-        sku: form.sku,
-        status: form.status,
-        featured: form.featured,
-        date: todayLabel,
-        image: mainUrl,
-      };
-      setProducts((prev) => [newProduct, ...prev]);
-    }
-
-    resetForm();
-    listRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-  };
-
+  // ===== EDIT =====
   const handleEdit = (product) => {
-    setEditingId(product.id);
+    setEditingId(product._id);
     setForm({
       name: product.name,
       category: product.category,
-      shortDesc: product.shortDesc,
+      shortDesc: product.shortDesc || "",
       description: product.description || "",
       price: String(product.price),
       salePrice: product.salePrice ? String(product.salePrice) : "",
       stock: String(product.stock),
-      sku: product.sku || "",
-      status: product.status,
-      featured: product.featured,
-      images: product.image
-        ? [{ id: "existing-main", url: product.image }]
-        : [],
-      mainImageId: product.image ? "existing-main" : null,
+      status: product.status || "Active",
+      featured: product.featured || false,
+      images: (product.images || [product.image]).filter(Boolean).map((img, idx) => ({
+        id: `existing-${idx}`,
+        url: img,
+        isExisting: true
+      })),
+      mainImageId: (product.images || [product.image]).findIndex(i => i === product.image) >= 0 
+        ? `existing-${(product.images || [product.image]).findIndex(i => i === product.image)}`
+        : `existing-0`,
     });
     formTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
-  const handleDelete = (id) => {
+  // ===== DELETE =====
+  const handleDelete = async (id) => {
     if (!window.confirm("Delete this product?")) return;
-    // TODO: API call — delete product on backend
-    setProducts((prev) => prev.filter((p) => p.id !== id));
+
+    try {
+      const token = getAdminToken();
+      const response = await fetch(`${API_URL}/admin-products/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (response.ok) {
+        alert('Product deleted successfully');
+        fetchProducts();
+      }
+    } catch (error) {
+      console.error('Delete error:', error);
+      alert('Failed to delete product');
+    }
   };
 
-  // ---------- Filtering + pagination ----------
+  // ===== VIEW LIVE =====
+  const handleViewLive = (productId) => {
+    window.open(`/product/${productId}`, '_blank');
+  };
+
+  // ===== FILTERING + PAGINATION =====
   const filteredProducts = products.filter((p) => {
-    const matchCategory =
-      filterCategory === "All Categories" || p.category === filterCategory;
+    const matchCategory = filterCategory === "All Categories" || p.category === filterCategory;
     const matchStatus = filterStatus === "All Status" || p.status === filterStatus;
     const matchSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase());
     return matchCategory && matchStatus && matchSearch;
@@ -304,10 +278,10 @@ const ProductsPage = () => {
           {/* Top bar */}
           <div className="products-topbar" ref={formTopRef}>
             <div className="topbar-left">
-              <button className="back-btn" type="button">
+              <button className="back-btn" type="button" onClick={handleCancel}>
                 <ArrowLeft size={18} />
               </button>
-              <h2>{editingId ? "Edit Product" : "Add / Edit Product"}</h2>
+              <h2>{editingId ? "Edit Product" : "Add Product"}</h2>
             </div>
             <button
               className="view-products-btn"
@@ -326,9 +300,7 @@ const ProductsPage = () => {
 
               <div className="form-row two-col">
                 <div className="form-field">
-                  <label>
-                    Product Name <span className="req">*</span>
-                  </label>
+                  <label>Product Name <span className="req">*</span></label>
                   <input
                     type="text"
                     name="name"
@@ -338,16 +310,12 @@ const ProductsPage = () => {
                   />
                 </div>
                 <div className="form-field">
-                  <label>
-                    Category <span className="req">*</span>
-                  </label>
+                  <label>Category <span className="req">*</span></label>
                   <div className="select-wrapper">
                     <select name="category" value={form.category} onChange={handleFieldChange}>
                       <option value="">Select category</option>
                       {CATEGORIES.map((c) => (
-                        <option key={c} value={c}>
-                          {c}
-                        </option>
+                        <option key={c} value={c}>{c}</option>
                       ))}
                     </select>
                     <ChevronDown className="select-icon" size={16} />
@@ -373,40 +341,6 @@ const ProductsPage = () => {
               <div className="form-field">
                 <label>Description</label>
                 <div className="editor-box">
-                  <div className="editor-toolbar">
-                    <div className="select-wrapper editor-format">
-                      <select defaultValue="Normal">
-                        <option>Normal</option>
-                        <option>Heading</option>
-                        <option>Subheading</option>
-                      </select>
-                      <ChevronDown className="select-icon" size={14} />
-                    </div>
-                    <span className="toolbar-divider" />
-                    <button type="button" className="toolbar-btn">
-                      <Bold size={14} />
-                    </button>
-                    <button type="button" className="toolbar-btn">
-                      <Italic size={14} />
-                    </button>
-                    <button type="button" className="toolbar-btn">
-                      <Underline size={14} />
-                    </button>
-                    <span className="toolbar-divider" />
-                    <button type="button" className="toolbar-btn">
-                      <ListIcon size={14} />
-                    </button>
-                    <button type="button" className="toolbar-btn">
-                      <ListOrdered size={14} />
-                    </button>
-                    <span className="toolbar-divider" />
-                    <button type="button" className="toolbar-btn">
-                      <LinkIcon size={14} />
-                    </button>
-                    <button type="button" className="toolbar-btn">
-                      <ImageIcon size={14} />
-                    </button>
-                  </div>
                   <textarea
                     name="description"
                     placeholder="Enter product description..."
@@ -421,7 +355,7 @@ const ProductsPage = () => {
                 <div className="section-header-row">
                   <div>
                     <h3 className="card-title">Product Images</h3>
-                    <p className="section-sub">Upload multiple images for this product</p>
+                    <p className="section-sub">Upload multiple images (max 5MB each)</p>
                   </div>
                 </div>
 
@@ -433,7 +367,10 @@ const ProductsPage = () => {
                       onClick={() => setMainImage(img.id)}
                     >
                       {img.id === form.mainImageId && <span className="main-badge">Main</span>}
-                      <img src={img.url} alt="product" />
+                      <img 
+                        src={img.isExisting ? `${STORAGE_URL}/${img.url}` : img.url} 
+                        alt="product" 
+                      />
                       <button
                         type="button"
                         className="remove-img-btn"
@@ -463,7 +400,7 @@ const ProductsPage = () => {
                 </div>
 
                 <p className="images-hint">
-                  Click an image to set it as Main. First image is set as main by default.
+                  Click an image to set it as Main. First image is main by default.
                 </p>
               </div>
             </div>
@@ -474,9 +411,7 @@ const ProductsPage = () => {
 
               <div className="form-row two-col">
                 <div className="form-field">
-                  <label>
-                    Price (PKR) <span className="req">*</span>
-                  </label>
+                  <label>Price (PKR) <span className="req">*</span></label>
                   <input
                     type="number"
                     name="price"
@@ -490,36 +425,22 @@ const ProductsPage = () => {
                   <input
                     type="number"
                     name="salePrice"
-                    placeholder="Enter sale price (optional)"
+                    placeholder="Optional"
                     value={form.salePrice}
                     onChange={handleFieldChange}
                   />
                 </div>
               </div>
 
-              <div className="form-row two-col">
-                <div className="form-field">
-                  <label>
-                    Stock <span className="req">*</span>
-                  </label>
-                  <input
-                    type="number"
-                    name="stock"
-                    placeholder="Enter stock quantity"
-                    value={form.stock}
-                    onChange={handleFieldChange}
-                  />
-                </div>
-                <div className="form-field">
-                  <label>SKU (Optional)</label>
-                  <input
-                    type="text"
-                    name="sku"
-                    placeholder="Enter SKU code"
-                    value={form.sku}
-                    onChange={handleFieldChange}
-                  />
-                </div>
+              <div className="form-field">
+                <label>Stock <span className="req">*</span></label>
+                <input
+                  type="number"
+                  name="stock"
+                  placeholder="Enter stock quantity"
+                  value={form.stock}
+                  onChange={handleFieldChange}
+                />
               </div>
 
               <div className="form-field">
@@ -528,7 +449,6 @@ const ProductsPage = () => {
                   <select name="status" value={form.status} onChange={handleFieldChange}>
                     <option value="Active">Active</option>
                     <option value="Inactive">Inactive</option>
-                    <option value="Draft">Draft</option>
                   </select>
                   <ChevronDown className="select-icon" size={16} />
                 </div>
@@ -540,7 +460,7 @@ const ProductsPage = () => {
                 <div className="toggle-row">
                   <div>
                     <p className="toggle-label">Featured Product</p>
-                    <p className="toggle-sub">Show this product on homepage / featured section</p>
+                    <p className="toggle-sub">Show on homepage</p>
                   </div>
                   <label className="switch">
                     <input
@@ -555,13 +475,14 @@ const ProductsPage = () => {
                 <div className="main-display-row">
                   <div>
                     <p className="toggle-label">Main Display Image</p>
-                    <p className="toggle-sub">
-                      This image will be shown on product card &amp; product page
-                    </p>
+                    <p className="toggle-sub">Shown on product card</p>
                   </div>
                   <div className="main-display-preview">
                     {mainImage ? (
-                      <img src={mainImage.url} alt="main" />
+                      <img 
+                        src={mainImage.isExisting ? `${STORAGE_URL}/${mainImage.url}` : mainImage.url} 
+                        alt="main" 
+                      />
                     ) : (
                       <span className="no-image">No image</span>
                     )}
@@ -573,8 +494,13 @@ const ProductsPage = () => {
                 <button type="button" className="cancel-btn" onClick={handleCancel}>
                   Cancel
                 </button>
-                <button type="button" className="save-btn" onClick={handleSubmit}>
-                  {editingId ? "Update Product" : "Save Product"}
+                <button 
+                  type="button" 
+                  className="save-btn" 
+                  onClick={handleSubmit}
+                  disabled={saving}
+                >
+                  {saving ? "Saving..." : editingId ? "Update Product" : "Save Product"}
                 </button>
               </div>
             </div>
@@ -603,9 +529,7 @@ const ProductsPage = () => {
                 >
                   <option>All Categories</option>
                   {CATEGORIES.map((c) => (
-                    <option key={c} value={c}>
-                      {c}
-                    </option>
+                    <option key={c} value={c}>{c}</option>
                   ))}
                 </select>
                 <ChevronDown className="select-icon" size={16} />
@@ -622,7 +546,6 @@ const ProductsPage = () => {
                   <option>All Status</option>
                   <option>Active</option>
                   <option>Inactive</option>
-                  <option>Draft</option>
                 </select>
                 <ChevronDown className="select-icon" size={16} />
               </div>
@@ -654,77 +577,82 @@ const ProductsPage = () => {
                     <th>Stock</th>
                     <th>Status</th>
                     <th>Featured</th>
-                    <th>Date</th>
                     <th>Action</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {paginatedProducts.length === 0 && (
+                  {loading ? (
                     <tr>
-                      <td colSpan={11} className="empty-row">
-                        No products found.
-                      </td>
+                      <td colSpan={10} className="empty-row">Loading...</td>
                     </tr>
+                  ) : paginatedProducts.length === 0 ? (
+                    <tr>
+                      <td colSpan={10} className="empty-row">No products found.</td>
+                    </tr>
+                  ) : (
+                    paginatedProducts.map((p, idx) => (
+                      <tr key={p._id}>
+                        <td>{startIdx + idx + 1}</td>
+                        <td>
+                          <div className="table-thumb">
+                            {p.image && <img src={`${STORAGE_URL}/${p.image}`} alt={p.name} />}
+                          </div>
+                        </td>
+                        <td>
+                          <div className="product-name-cell">
+                            <span className="pname">{p.name}</span>
+                            <span className="pdesc">{p.shortDesc}</span>
+                          </div>
+                        </td>
+                        <td>{p.category}</td>
+                        <td>PKR {p.price.toLocaleString()}</td>
+                        <td>
+                          {p.salePrice ? (
+                            <span className="sale-price">PKR {p.salePrice.toLocaleString()}</span>
+                          ) : "—"}
+                        </td>
+                        <td>{p.stock}</td>
+                        <td>
+                          <span className={`status-pill ${p.status === "Active" ? "active" : "inactive"}`}>
+                            {p.status}
+                          </span>
+                        </td>
+                        <td>
+                          <Star
+                            size={16}
+                            className={p.featured ? "star-filled" : "star-empty"}
+                            fill={p.featured ? "#e0983f" : "none"}
+                          />
+                        </td>
+                        <td className="action-cell">
+                          <button
+                            type="button"
+                            className="icon-btn view"
+                            onClick={() => handleViewLive(p._id)}
+                            title="View on Live"
+                          >
+                            <Eye size={14} />
+                          </button>
+                          <button
+                            type="button"
+                            className="icon-btn edit"
+                            onClick={() => handleEdit(p)}
+                            title="Edit"
+                          >
+                            <Pencil size={14} />
+                          </button>
+                          <button
+                            type="button"
+                            className="icon-btn delete"
+                            onClick={() => handleDelete(p._id)}
+                            title="Delete"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </td>
+                      </tr>
+                    ))
                   )}
-                  {paginatedProducts.map((p, idx) => (
-                    <tr key={p.id}>
-                      <td>{startIdx + idx + 1}</td>
-                      <td>
-                        <div className="table-thumb">
-                          {p.image && <img src={p.image} alt={p.name} />}
-                        </div>
-                      </td>
-                      <td>
-                        <div className="product-name-cell">
-                          <span className="pname">{p.name}</span>
-                          <span className="pdesc">{p.shortDesc}</span>
-                        </div>
-                      </td>
-                      <td>{p.category}</td>
-                      <td>PKR {p.price.toLocaleString()}</td>
-                      <td>
-                        {p.salePrice ? (
-                          <span className="sale-price">PKR {p.salePrice.toLocaleString()}</span>
-                        ) : (
-                          "—"
-                        )}
-                      </td>
-                      <td>{p.stock}</td>
-                      <td>
-                        <span
-                          className={`status-pill ${
-                            p.status === "Active" ? "active" : "inactive"
-                          }`}
-                        >
-                          {p.status}
-                        </span>
-                      </td>
-                      <td>
-                        <Star
-                          size={16}
-                          className={p.featured ? "star-filled" : "star-empty"}
-                          fill={p.featured ? "#e0983f" : "none"}
-                        />
-                      </td>
-                      <td>{p.date}</td>
-                      <td className="action-cell">
-                        <button
-                          type="button"
-                          className="icon-btn edit"
-                          onClick={() => handleEdit(p)}
-                        >
-                          <Pencil size={14} />
-                        </button>
-                        <button
-                          type="button"
-                          className="icon-btn delete"
-                          onClick={() => handleDelete(p.id)}
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
                 </tbody>
               </table>
             </div>

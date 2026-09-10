@@ -36,6 +36,10 @@ import AdminTestimonials from './admin/pages/Testimonials';
 import AdminFAQ from './admin/pages/Faq';
 import AdminAboutUs from './admin/pages/About_us';
 
+// ✅ NAYA - Admin Contact & Subscribe
+import AdminContactUs from './admin/pages/ContactUs';
+import AdminSubscribeUs from './admin/pages/SubscribeUs';
+
 // ✅ User Protected Route
 import UserProtectedRoute from './components/ProtectedRoute';
 
@@ -171,6 +175,26 @@ function AppContent() {
             element={
               <AdminProtectedRoute>
                 <AdminAboutUs />
+              </AdminProtectedRoute>
+            }
+          />
+
+          {/* ✅ NAYA - Admin Contact Us */}
+          <Route
+            path="/admin/contact-us"
+            element={
+              <AdminProtectedRoute>
+                <AdminContactUs />
+              </AdminProtectedRoute>
+            }
+          />
+
+          {/* ✅ NAYA - Admin Subscribe Us */}
+          <Route
+            path="/admin/subscribe-us"
+            element={
+              <AdminProtectedRoute>
+                <AdminSubscribeUs />
               </AdminProtectedRoute>
             }
           />

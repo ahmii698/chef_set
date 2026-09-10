@@ -1,116 +1,19 @@
-import React, { useState, useMemo } from "react";
+// src/admin/pages/Customers.jsx
+import React, { useState, useEffect, useMemo } from "react";
 import {
-  Search,
-  Filter,
-  Calendar,
-  Eye,
-  Trash2,
-  ChevronLeft,
-  ChevronRight,
-  Users,
-  UserCheck,
-  UserX,
-  Briefcase,
-  Download,
+  Search, Filter, Calendar, Eye, Trash2, ChevronLeft, ChevronRight,
+  Users, UserCheck, UserX, Briefcase, Download, X, Mail, Phone,
+  ShoppingBag, CheckCircle2
 } from "lucide-react";
+import toast from "react-hot-toast";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
+import { getAllCustomers, getCustomerById, deleteCustomer } from "../services/adminCustomerService";
+import { STORAGE_URL } from "../../../config";
 import "./Customers.css";
 
-// ---------------- Dummy Data ----------------
-const customersData = [
-  {
-    id: 1,
-    name: "Ahmed Raza",
-    email: "ahmed.raza@email.com",
-    phone: "+92 300 1234567",
-    avatar: "https://randomuser.me/api/portraits/men/32.jpg",
-    orders: 12,
-    totalSpent: "PKR 85,430",
-    status: "Active",
-    joinedAt: "May 25, 2025",
-  },
-  {
-    id: 2,
-    name: "Ali Khan",
-    email: "ali.khan@email.com",
-    phone: "+92 301 9876543",
-    avatar: "https://randomuser.me/api/portraits/men/45.jpg",
-    orders: 9,
-    totalSpent: "PKR 62,280",
-    status: "Active",
-    joinedAt: "May 24, 2025",
-  },
-  {
-    id: 3,
-    name: "Hamza Ali",
-    email: "hamza.ali@email.com",
-    phone: "+92 302 3456789",
-    avatar: "https://randomuser.me/api/portraits/men/12.jpg",
-    orders: 8,
-    totalSpent: "PKR 48,760",
-    status: "Active",
-    joinedAt: "May 23, 2025",
-  },
-  {
-    id: 4,
-    name: "Usman Sheikh",
-    email: "usman.sheikh@email.com",
-    phone: "+92 303 4567890",
-    avatar: "https://randomuser.me/api/portraits/men/67.jpg",
-    orders: 7,
-    totalSpent: "PKR 36,250",
-    status: "Active",
-    joinedAt: "May 22, 2025",
-  },
-  {
-    id: 5,
-    name: "Sara Ahmed",
-    email: "sara.ahmed@email.com",
-    phone: "+92 304 5678901",
-    avatar: "https://randomuser.me/api/portraits/women/22.jpg",
-    orders: 6,
-    totalSpent: "PKR 28,540",
-    status: "Active",
-    joinedAt: "May 21, 2025",
-  },
-  {
-    id: 6,
-    name: "Zain Iqbal",
-    email: "zain.iqbal@email.com",
-    phone: "+92 305 6789012",
-    avatar: "https://randomuser.me/api/portraits/men/54.jpg",
-    orders: 3,
-    totalSpent: "PKR 18,670",
-    status: "Inactive",
-    joinedAt: "May 18, 2025",
-  },
-  {
-    id: 7,
-    name: "Maryam Fatima",
-    email: "maryam.fatima@email.com",
-    phone: "+92 306 7890123",
-    avatar: "https://randomuser.me/api/portraits/women/47.jpg",
-    orders: 2,
-    totalSpent: "PKR 9,850",
-    status: "Inactive",
-    joinedAt: "May 17, 2025",
-  },
-  {
-    id: 8,
-    name: "Bilal Hussain",
-    email: "bilal.hussain@email.com",
-    phone: "+92 307 8901234",
-    avatar: "https://randomuser.me/api/portraits/men/23.jpg",
-    orders: 1,
-    totalSpent: "PKR 4,200",
-    status: "Inactive",
-    joinedAt: "May 15, 2025",
-  },
-];
-
 const statusOptions = ["All Status", "Active", "Inactive"];
-const countryOptions = ["All Countries", "Pakistan", "UAE", "Saudi Arabia"];
+const ITEMS_PER_PAGE = 10;
 
 const statusClassMap = {
   Active: "cust-status-active",
@@ -119,48 +22,168 @@ const statusClassMap = {
 
 export default function CustomerPage() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [customers, setCustomers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({
+    totalCustomers: 0,
+    activeCustomers: 0,
+    inactiveCustomers: 0,
+    totalRevenue: 0,
+  });
 
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All Status");
-  const [countryFilter, setCountryFilter] = useState("All Countries");
   const [currentPage, setCurrentPage] = useState(1);
-  const [perPage, setPerPage] = useState(10);
+  const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [customerOrders, setCustomerOrders] = useState([]);
+  const [loadingDetails, setLoadingDetails] = useState(false);
 
-  // Summary numbers reflect the full customer base, not just this page
-  const totalCustomers = 1540;
-  const activeCustomers = 1208;
-  const inactiveCustomers = 332;
-  const totalSpent = "PKR 2,450,890";
-  const totalPages = 154;
-
-  const filteredCustomers = useMemo(() => {
-    return customersData.filter((c) => {
-      const matchesSearch =
-        c.name.toLowerCase().includes(search.toLowerCase()) ||
-        c.email.toLowerCase().includes(search.toLowerCase()) ||
-        c.phone.toLowerCase().includes(search.toLowerCase());
-      const matchesStatus =
-        statusFilter === "All Status" || c.status === statusFilter;
-      return matchesSearch && matchesStatus;
-    });
-  }, [search, statusFilter]);
-
-  const handleView = (customer) => {
-    console.log("View customer:", customer.id);
-  };
-
-  const handleDelete = (customer) => {
-    if (window.confirm(`Remove ${customer.name} from customers?`)) {
-      console.log("Delete customer:", customer.id);
+  // ===== FETCH CUSTOMERS =====
+  const fetchCustomers = async () => {
+    try {
+      setLoading(true);
+      const data = await getAllCustomers();
+      setCustomers(data.customers || []);
+      setStats(data.stats || {
+        totalCustomers: 0,
+        activeCustomers: 0,
+        inactiveCustomers: 0,
+        totalRevenue: 0,
+      });
+    } catch (error) {
+      toast.error("Failed to fetch customers");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleExport = () => {
-    console.log("Export customers clicked");
+  useEffect(() => {
+    fetchCustomers();
+  }, []);
+
+  // ===== FILTER =====
+  const filteredCustomers = useMemo(() => {
+    return customers.filter((c) => {
+      const matchesSearch =
+        c.fullName?.toLowerCase().includes(search.toLowerCase()) ||
+        c.email?.toLowerCase().includes(search.toLowerCase()) ||
+        c.phone?.toLowerCase().includes(search.toLowerCase());
+      const matchesStatus = statusFilter === "All Status" || c.status === statusFilter;
+      return matchesSearch && matchesStatus;
+    });
+  }, [customers, search, statusFilter]);
+
+  // ===== PAGINATION =====
+  const totalPages = Math.max(1, Math.ceil(filteredCustomers.length / ITEMS_PER_PAGE));
+  const safePage = Math.min(currentPage, totalPages);
+  const startIdx = (safePage - 1) * ITEMS_PER_PAGE;
+  const paginatedCustomers = filteredCustomers.slice(startIdx, startIdx + ITEMS_PER_PAGE);
+
+  // ===== VIEW CUSTOMER =====
+  const handleView = async (customer) => {
+    setSelectedCustomer(customer);
+    setLoadingDetails(true);
+    try {
+      const data = await getCustomerById(customer._id);
+      setCustomerOrders(data.orders || []);
+    } catch (error) {
+      toast.error("Failed to load customer details");
+    } finally {
+      setLoadingDetails(false);
+    }
   };
 
-  const showingFrom = filteredCustomers.length === 0 ? 0 : 1;
-  const showingTo = filteredCustomers.length;
+  const closeModal = () => {
+    setSelectedCustomer(null);
+    setCustomerOrders([]);
+  };
+
+  // ===== DELETE CUSTOMER =====
+  const handleDelete = (customer) => {
+    toast((t) => (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', minWidth: '240px' }}>
+        <span style={{ fontWeight: 600, fontSize: '14px' }}>Delete this customer?</span>
+        <span style={{ fontSize: '12px', color: '#999' }}>
+          {customer.fullName} will be permanently removed.
+        </span>
+        <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+          <button
+            onClick={() => toast.dismiss(t.id)}
+            style={{
+              padding: '6px 14px', background: 'transparent',
+              border: '1px solid rgba(255,255,255,0.2)',
+              borderRadius: '6px', color: '#fff',
+              cursor: 'pointer', fontSize: '12px', fontWeight: 600,
+            }}
+          >
+            Cancel
+          </button>
+          <button
+            onClick={async () => {
+              toast.dismiss(t.id);
+              try {
+                await deleteCustomer(customer._id);
+                toast.success('Customer deleted! 🗑️');
+                setCustomers(prev => prev.filter(c => c._id !== customer._id));
+                if (selectedCustomer?._id === customer._id) closeModal();
+                fetchCustomers();
+              } catch (error) {
+                toast.error('Failed to delete customer');
+              }
+            }}
+            style={{
+              padding: '6px 14px', background: '#e5484d',
+              border: 'none', borderRadius: '6px', color: '#fff',
+              cursor: 'pointer', fontSize: '12px', fontWeight: 600,
+            }}
+          >
+            Delete
+          </button>
+        </div>
+      </div>
+    ), {
+      duration: 6000,
+      style: {
+        background: '#17171c', color: '#fff',
+        border: '1px solid rgba(255,255,255,0.1)',
+        borderRadius: '10px', padding: '16px', maxWidth: '320px',
+      },
+    });
+  };
+
+  // ===== EXPORT =====
+  const handleExport = () => {
+    if (customers.length === 0) {
+      toast.error("No customers to export");
+      return;
+    }
+
+    const headers = ['Name', 'Email', 'Phone', 'Orders', 'Total Spent', 'Status', 'Joined'];
+    const rows = customers.map(c => [
+      c.fullName,
+      c.email,
+      c.phone,
+      c.totalOrders,
+      c.totalSpent,
+      c.status,
+      new Date(c.createdAt).toLocaleDateString()
+    ]);
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `customers-${Date.now()}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+
+    toast.success('Customers exported! 📥');
+  };
 
   return (
     <div className="cust-layout">
@@ -196,12 +219,8 @@ export default function CustomerPage() {
               </div>
               <div>
                 <div className="cust-stat-label">Total Customers</div>
-                <div className="cust-stat-value">
-                  {totalCustomers.toLocaleString()}
-                </div>
-                <div className="cust-stat-sub cust-stat-up">
-                  ↑ 12.5% from last month
-                </div>
+                <div className="cust-stat-value">{stats.totalCustomers}</div>
+                <div className="cust-stat-sub cust-stat-up">All registered users</div>
               </div>
             </div>
 
@@ -211,12 +230,8 @@ export default function CustomerPage() {
               </div>
               <div>
                 <div className="cust-stat-label">Active Customers</div>
-                <div className="cust-stat-value">
-                  {activeCustomers.toLocaleString()}
-                </div>
-                <div className="cust-stat-sub cust-stat-up">
-                  ↑ 8.4% from last month
-                </div>
+                <div className="cust-stat-value">{stats.activeCustomers}</div>
+                <div className="cust-stat-sub cust-stat-up">Placed at least 1 order</div>
               </div>
             </div>
 
@@ -226,12 +241,8 @@ export default function CustomerPage() {
               </div>
               <div>
                 <div className="cust-stat-label">Inactive Customers</div>
-                <div className="cust-stat-value">
-                  {inactiveCustomers.toLocaleString()}
-                </div>
-                <div className="cust-stat-sub cust-stat-down">
-                  ↓ 3.2% from last month
-                </div>
+                <div className="cust-stat-value">{stats.inactiveCustomers}</div>
+                <div className="cust-stat-sub cust-stat-down">No orders yet</div>
               </div>
             </div>
 
@@ -240,11 +251,9 @@ export default function CustomerPage() {
                 <Briefcase size={20} />
               </div>
               <div>
-                <div className="cust-stat-label">Total Spent</div>
-                <div className="cust-stat-value">{totalSpent}</div>
-                <div className="cust-stat-sub cust-stat-up">
-                  ↑ 15.3% from last month
-                </div>
+                <div className="cust-stat-label">Total Revenue</div>
+                <div className="cust-stat-value">PKR {stats.totalRevenue.toLocaleString()}</div>
+                <div className="cust-stat-sub cust-stat-up">All time</div>
               </div>
             </div>
           </div>
@@ -257,43 +266,25 @@ export default function CustomerPage() {
                 type="text"
                 placeholder="Search by name, email or phone..."
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setCurrentPage(1);
+                }}
               />
             </div>
 
             <select
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
+              onChange={(e) => {
+                setStatusFilter(e.target.value);
+                setCurrentPage(1);
+              }}
               className="cust-filter-select"
             >
               {statusOptions.map((opt) => (
-                <option key={opt} value={opt}>
-                  {opt}
-                </option>
+                <option key={opt} value={opt}>{opt}</option>
               ))}
             </select>
-
-            <select
-              value={countryFilter}
-              onChange={(e) => setCountryFilter(e.target.value)}
-              className="cust-filter-select"
-            >
-              {countryOptions.map((opt) => (
-                <option key={opt} value={opt}>
-                  {opt}
-                </option>
-              ))}
-            </select>
-
-            <button className="cust-filter-date">
-              <Calendar size={16} />
-              <span>Select Date Range</span>
-            </button>
-
-            <button className="cust-filter-btn">
-              <Filter size={16} />
-              <span>Filter</span>
-            </button>
           </div>
 
           {/* Table */}
@@ -313,38 +304,38 @@ export default function CustomerPage() {
                 </tr>
               </thead>
               <tbody>
-                {filteredCustomers.length === 0 ? (
+                {loading ? (
                   <tr>
-                    <td colSpan={9} className="cust-empty">
-                      No customers found.
-                    </td>
+                    <td colSpan={9} className="cust-empty">Loading customers...</td>
+                  </tr>
+                ) : paginatedCustomers.length === 0 ? (
+                  <tr>
+                    <td colSpan={9} className="cust-empty">No customers found.</td>
                   </tr>
                 ) : (
-                  filteredCustomers.map((c, idx) => (
-                    <tr key={c.id}>
-                      <td>{idx + 1}</td>
+                  paginatedCustomers.map((c, idx) => (
+                    <tr key={c._id}>
+                      <td>{startIdx + idx + 1}</td>
                       <td>
                         <div className="cust-customer-cell">
-                          <img
-                            src={c.avatar}
-                            alt={c.name}
-                            className="cust-avatar"
-                          />
-                          <span className="cust-name">{c.name}</span>
+                          <div className="cust-avatar-placeholder">
+                            {c.fullName?.charAt(0)?.toUpperCase() || 'U'}
+                          </div>
+                          <span className="cust-name">{c.fullName}</span>
                         </div>
                       </td>
                       <td className="cust-muted">{c.email}</td>
                       <td className="cust-muted">{c.phone}</td>
-                      <td>{c.orders}</td>
-                      <td className="cust-total">{c.totalSpent}</td>
+                      <td>{c.totalOrders}</td>
+                      <td className="cust-total">PKR {c.totalSpent.toLocaleString()}</td>
                       <td>
-                        <span
-                          className={`cust-status-badge ${statusClassMap[c.status]}`}
-                        >
+                        <span className={`cust-status-badge ${statusClassMap[c.status]}`}>
                           {c.status}
                         </span>
                       </td>
-                      <td className="cust-muted">{c.joinedAt}</td>
+                      <td className="cust-muted">
+                        {new Date(c.createdAt).toLocaleDateString()}
+                      </td>
                       <td>
                         <div className="cust-actions">
                           <button
@@ -373,59 +364,35 @@ export default function CustomerPage() {
           {/* Pagination */}
           <div className="cust-pagination-bar">
             <span className="cust-showing">
-              Showing {showingFrom} to {showingTo} of{" "}
-              {totalCustomers.toLocaleString()} customers
+              Showing {filteredCustomers.length === 0 ? 0 : startIdx + 1} to{" "}
+              {Math.min(startIdx + ITEMS_PER_PAGE, filteredCustomers.length)} of{" "}
+              {filteredCustomers.length} customers
             </span>
             <div className="cust-pagination-controls">
-              <select
-                className="cust-per-page"
-                value={perPage}
-                onChange={(e) => setPerPage(Number(e.target.value))}
-              >
-                <option value={10}>10 per page</option>
-                <option value={20}>20 per page</option>
-                <option value={50}>50 per page</option>
-              </select>
-
               <button
                 className="cust-page-btn"
-                disabled={currentPage === 1}
+                disabled={safePage === 1}
                 onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               >
                 <ChevronLeft size={16} />
               </button>
-
-              {[1, 2, 3].map((p) => (
-                <button
-                  key={p}
-                  className={
-                    p === currentPage
-                      ? "cust-page-num cust-page-num-active"
-                      : "cust-page-num"
-                  }
-                  onClick={() => setCurrentPage(p)}
-                >
-                  {p}
-                </button>
-              ))}
-              <span className="cust-page-dots">...</span>
-              <button
-                className={
-                  currentPage === totalPages
-                    ? "cust-page-num cust-page-num-active"
-                    : "cust-page-num"
-                }
-                onClick={() => setCurrentPage(totalPages)}
-              >
-                {totalPages}
-              </button>
-
+              {Array.from({ length: totalPages }, (_, i) => i + 1)
+                .filter(num => num === 1 || num === totalPages || Math.abs(num - safePage) <= 1)
+                .map((num, idx, arr) => (
+                  <React.Fragment key={num}>
+                    {idx > 0 && arr[idx - 1] !== num - 1 && <span className="cust-page-dots">...</span>}
+                    <button
+                      className={`cust-page-num ${safePage === num ? "cust-page-num-active" : ""}`}
+                      onClick={() => setCurrentPage(num)}
+                    >
+                      {num}
+                    </button>
+                  </React.Fragment>
+                ))}
               <button
                 className="cust-page-btn"
-                disabled={currentPage === totalPages}
-                onClick={() =>
-                  setCurrentPage((p) => Math.min(totalPages, p + 1))
-                }
+                disabled={safePage === totalPages}
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
               >
                 <ChevronRight size={16} />
               </button>
@@ -433,6 +400,121 @@ export default function CustomerPage() {
           </div>
         </div>
       </div>
+
+      {/* ===== CUSTOMER DETAILS MODAL ===== */}
+      {selectedCustomer && (
+        <div className="modal-overlay" onClick={closeModal}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <div>
+                <h2>{selectedCustomer.fullName}</h2>
+                <p className="modal-subtitle">
+                  Customer since {new Date(selectedCustomer.createdAt).toLocaleDateString()}
+                </p>
+              </div>
+              <button className="modal-close" onClick={closeModal}>
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="modal-body">
+              {/* Customer Info */}
+              <div className="modal-section">
+                <h3 className="modal-section-title">
+                  <UserCheck size={16} /> Customer Information
+                </h3>
+                <div className="info-grid">
+                  <div className="info-item">
+                    <span className="info-label">Full Name</span>
+                    <span className="info-value">{selectedCustomer.fullName}</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="info-label">Email</span>
+                    <span className="info-value">{selectedCustomer.email}</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="info-label">Phone</span>
+                    <span className="info-value">{selectedCustomer.phone}</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="info-label">Status</span>
+                    <span className={`cust-status-badge ${statusClassMap[selectedCustomer.status]}`}>
+                      {selectedCustomer.status}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Stats */}
+              <div className="modal-section">
+                <h3 className="modal-section-title">
+                  <Briefcase size={16} /> Purchase Summary
+                </h3>
+                <div className="info-grid">
+                  <div className="info-item">
+                    <span className="info-label">Total Orders</span>
+                    <span className="info-value">{selectedCustomer.totalOrders}</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="info-label">Total Spent</span>
+                    <span className="info-value" style={{ color: '#f5a623' }}>
+                      PKR {selectedCustomer.totalSpent.toLocaleString()}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Order History */}
+              <div className="modal-section">
+                <h3 className="modal-section-title">
+                  <ShoppingBag size={16} /> Order History ({customerOrders.length})
+                </h3>
+                {loadingDetails ? (
+                  <div className="no-proof">Loading orders...</div>
+                ) : customerOrders.length === 0 ? (
+                  <div className="no-proof">No orders placed yet</div>
+                ) : (
+                  <div className="order-items-list">
+                    {customerOrders.slice(0, 5).map((order) => (
+                      <div className="order-item" key={order._id}>
+                        <div className="order-item-info">
+                          <span className="order-item-name">#{order.orderId}</span>
+                          <span className="order-item-qty">
+                            {new Date(order.createdAt).toLocaleDateString()} • {order.items?.length || 0} items
+                          </span>
+                        </div>
+                        <span className={`status-badge status-${order.status}`}>
+                          {order.status?.toUpperCase()}
+                        </span>
+                        <div className="order-item-total">
+                          PKR {order.total?.toLocaleString()}
+                        </div>
+                      </div>
+                    ))}
+                    {customerOrders.length > 5 && (
+                      <div style={{ textAlign: 'center', padding: '12px', color: '#888', fontSize: '12px' }}>
+                        + {customerOrders.length - 5} more orders
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="modal-footer">
+              <button
+                className="delete-order-btn"
+                onClick={() => handleDelete(selectedCustomer)}
+              >
+                <Trash2 size={16} /> Delete Customer
+              </button>
+              <button className="close-modal-btn" onClick={closeModal}>
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

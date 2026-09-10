@@ -1,9 +1,13 @@
+// src/admin/pages/forgot.jsx
 import React, { useState, useRef } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import { Eye, EyeOff, Mail, Lock, ChefHat, ArrowLeft } from "lucide-react";
+import { adminForgotPassword, adminVerifyOTP, adminResetPassword } from "../services/adminAuthService";
 import "./forgot.css";
 
 const Forgot = () => {
-  const [step, setStep] = useState(1); // 1 = email, 2 = otp + new password
+  const navigate = useNavigate();
+  const [step, setStep] = useState(1);
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [newPassword, setNewPassword] = useState("");
@@ -16,6 +20,7 @@ const Forgot = () => {
 
   const otpRefs = useRef([]);
 
+  // ===== SEND OTP =====
   const handleSendOtp = async (e) => {
     e.preventDefault();
     setError("");
@@ -26,26 +31,25 @@ const Forgot = () => {
       return;
     }
 
+    setLoading(true);
+
     try {
-      setLoading(true);
-      // TODO: apna API call yahan lagao
-      // await axios.post("/api/admin/forgot-password", { email });
-      console.log("Sending OTP to:", email);
+      const result = await adminForgotPassword(email);
+      setMessage(result.message || "OTP sent to your email");
       setStep(2);
     } catch (err) {
-      setError("Something went wrong. Please try again.");
+      setError(err.message || "Admin not found with this email");
     } finally {
       setLoading(false);
     }
   };
 
+  // ===== OTP HANDLING =====
   const handleOtpChange = (index, value) => {
     if (!/^[0-9]?$/.test(value)) return;
-
     const newOtp = [...otp];
     newOtp[index] = value;
     setOtp(newOtp);
-
     if (value && index < 5) {
       otpRefs.current[index + 1]?.focus();
     }
@@ -57,6 +61,7 @@ const Forgot = () => {
     }
   };
 
+  // ===== VERIFY OTP =====
   const handleVerifyOtp = async () => {
     setError("");
     setMessage("");
@@ -67,32 +72,37 @@ const Forgot = () => {
       return;
     }
 
+    setLoading(true);
+
     try {
-      setLoading(true);
-      // TODO: apna API call yahan lagao
-      // await axios.post("/api/admin/verify-otp", { email, otp: code });
-      console.log("Verifying OTP:", code);
-      setMessage("OTP verified successfully");
+      const result = await adminVerifyOTP(email, code);
+      setMessage(result.message || "OTP verified successfully");
     } catch (err) {
-      setError("Invalid or expired code");
+      setError(err.message || "Invalid or expired code");
     } finally {
       setLoading(false);
     }
   };
 
+  // ===== RESEND OTP =====
   const handleResendCode = async () => {
     setError("");
     setMessage("");
+    setLoading(true);
+
     try {
-      // TODO: apna API call yahan lagao
-      // await axios.post("/api/admin/resend-otp", { email });
-      console.log("Resending OTP to:", email);
-      setMessage("Code resent to your email");
+      const result = await adminForgotPassword(email);
+      setMessage(result.message || "Code resent to your email");
+      setOtp(["", "", "", "", "", ""]);
+      otpRefs.current[0]?.focus();
     } catch (err) {
-      setError("Failed to resend code");
+      setError(err.message || "Failed to resend code");
+    } finally {
+      setLoading(false);
     }
   };
 
+  // ===== UPDATE PASSWORD =====
   const handleUpdatePassword = async (e) => {
     e.preventDefault();
     setError("");
@@ -114,14 +124,19 @@ const Forgot = () => {
       return;
     }
 
+    if (newPassword.length < 6) {
+      setError("Password must be at least 6 characters");
+      return;
+    }
+
+    setLoading(true);
+
     try {
-      setLoading(true);
-      // TODO: apna API call yahan lagao
-      // await axios.post("/api/admin/reset-password", { email, otp: code, newPassword });
-      console.log("Updating password for:", email);
-      setMessage("Password updated successfully");
+      const result = await adminResetPassword(email, newPassword);
+      setMessage(result.message || "Password updated successfully");
+      setTimeout(() => navigate("/admin/login"), 2000);
     } catch (err) {
-      setError("Something went wrong. Please try again.");
+      setError(err.message || "Something went wrong");
     } finally {
       setLoading(false);
     }
@@ -147,10 +162,6 @@ const Forgot = () => {
               No worries! Enter your email address and we'll send you a verification code.
             </p>
 
-            <div className="step-divider">
-              <span className="dot active"></span>
-            </div>
-
             {error && <div className="error-message">{error}</div>}
             {message && <div className="success-message">{message}</div>}
 
@@ -162,7 +173,6 @@ const Forgot = () => {
                   <input
                     type="email"
                     id="email"
-                    name="email"
                     placeholder="Enter your email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -175,10 +185,10 @@ const Forgot = () => {
               </button>
             </form>
 
-            <a href="/admin/login" className="back-link">
+            <Link to="/admin/login" className="back-link">
               <ArrowLeft size={14} />
               Back to Login
-            </a>
+            </Link>
           </>
         )}
 
@@ -188,10 +198,6 @@ const Forgot = () => {
             <p className="form-description">
               We have sent a 6-digit verification code to your email address.
             </p>
-
-            <div className="step-divider">
-              <span className="dot active"></span>
-            </div>
 
             {error && <div className="error-message">{error}</div>}
             {message && <div className="success-message">{message}</div>}

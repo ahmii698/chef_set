@@ -22,61 +22,77 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/chefsetDB
   .then(() => console.log('✅ MongoDB Connected!'))
   .catch(err => console.error('❌ MongoDB Error:', err));
 
-// ==================== ROUTES ====================
+// ==================== PUBLIC / USER ROUTES ====================
 
-// Products Routes
+// Products
 app.use('/api/products', require('./routes/products'));
 
-// About Routes
+// About
 app.use('/api/about-header', require('./routes/aboutHeader'));
 app.use('/api/about-story', require('./routes/aboutStory'));
 app.use('/api/about-values', require('./routes/aboutValues'));
 app.use('/api/about-why-choose-us', require('./routes/aboutWhyChooseUs'));
 app.use('/api/about-achievement', require('./routes/aboutAchievement'));
 
-// Navbar Route
+// Navbar & Footer
 app.use('/api/navbar', require('./routes/navbar'));
-
-// Footer Route
 app.use('/api/footer', require('./routes/footer'));
 
-// FAQ Routes
+// FAQ (Public - for website)
 app.use('/api/faq-header', require('./routes/faqHeader'));
 app.use('/api/faqs', require('./routes/faqs'));
 app.use('/api/faq-info', require('./routes/faqInfo'));
 
-// Testimonials Route
+// Testimonials (Public - for website)
 app.use('/api/testimonials', require('./routes/testimonials'));
 
-// Home Hero Route
+// Home Sections
 app.use('/api/home-hero', require('./routes/homeHero'));
-
-// Home Category Route
 app.use('/api/home-category', require('./routes/homeCategory'));
-
-// Home Product Route
 app.use('/api/home-product', require('./routes/homeProduct'));
-
-// Home Stats Route
 app.use('/api/home-stats', require('./routes/homeStats'));
-
-// Home Craft Route
 app.use('/api/home-craft', require('./routes/homeCraft'));
 
-// Contact Route
+// Contact & Newsletter (Public)
 app.use('/api/contact', require('./routes/contact'));
-
-// Newsletter Route
 app.use('/api/newsletter', require('./routes/newsletter'));
 
-// Contact Message Route
+// Contact Message (Public - Website Form)
 app.use('/api/contact-message', require('./routes/contactMessage'));
 
-// Auth Route
+// User Orders
+app.use('/api/orders', require('./routes/orders'));
+
+// ==================== AUTH ROUTES ====================
+
+// User Auth
 app.use('/api/auth', require('./routes/auth'));
 
-// Orders Route
-app.use('/api/orders', require('./routes/orders'));
+// Admin Auth
+app.use('/api/admin-auth', require('./routes/adminAuth'));
+
+// ==================== ADMIN ROUTES ====================
+
+// Admin Products
+app.use('/api/admin-products', require('./routes/adminProducts'));
+
+// Admin Orders
+app.use('/api/admin-orders', require('./routes/admin_order'));
+
+// Admin Customers / Users View
+app.use('/api/admin-users', require('./routes/admin_users_view'));
+
+// Admin Testimonials
+app.use('/api/admin-testimonials', require('./routes/adminTestimonials'));
+
+// Admin FAQ
+app.use('/api/admin-faq', require('./routes/adminFaq'));
+
+// Admin Contact Messages
+app.use('/api/admin-contact-messages', require('./routes/admin_contactMessage'));
+
+// Admin Newsletter (Subscribe Us) ✅ NAYA
+app.use('/api/admin-newsletter', require('./routes/admin_newsletter'));
 
 // ==================== ERROR HANDLING ====================
 app.use((err, req, res, next) => {
@@ -102,7 +118,7 @@ app.listen(PORT, () => {
   console.log(`📦 Database: chefsetDB`);
   console.log(`📁 Storage: http://localhost:${PORT}/storage`);
   console.log(`📁 Uploads: http://localhost:${PORT}/uploads`);
-  console.log(`📋 Routes:`);
+  console.log(`\n📋 PUBLIC / USER ROUTES:`);
   console.log(`   - /api/products`);
   console.log(`   - /api/about-header`);
   console.log(`   - /api/about-story`);
@@ -123,6 +139,16 @@ app.listen(PORT, () => {
   console.log(`   - /api/contact`);
   console.log(`   - /api/newsletter`);
   console.log(`   - /api/contact-message`);
-  console.log(`   - /api/auth`);
   console.log(`   - /api/orders`);
+  console.log(`\n🔐 AUTH ROUTES:`);
+  console.log(`   - /api/auth`);
+  console.log(`   - /api/admin-auth`);
+  console.log(`\n🔒 ADMIN ROUTES:`);
+  console.log(`   - /api/admin-products`);
+  console.log(`   - /api/admin-orders`);
+  console.log(`   - /api/admin-users              ← Customers`);
+  console.log(`   - /api/admin-testimonials       ← Testimonials`);
+  console.log(`   - /api/admin-faq                ← FAQ`);
+  console.log(`   - /api/admin-contact-messages   ← Contact Messages`);
+  console.log(`   - /api/admin-newsletter         ← Subscribers`);
 });

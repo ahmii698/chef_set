@@ -1,3 +1,4 @@
+// src/admin/components/Sidebar.jsx
 import React from "react";
 import { NavLink } from "react-router-dom";
 import {
@@ -9,7 +10,8 @@ import {
   MessageSquareQuote,
   HelpCircle,
   Info,
-  LogOut,
+  Mail,              // ✅ Naya - Contact
+  Bell,              // ✅ Naya - Subscribe
 } from "lucide-react";
 import "./Sidebar.css";
 
@@ -22,6 +24,8 @@ const menuItems = [
   { name: "Testimonials", icon: MessageSquareQuote, path: "/admin/testimonials" },
   { name: "FAQ", icon: HelpCircle, path: "/admin/faq" },
   { name: "About Us", icon: Info, path: "/admin/about-us" },
+  { name: "Contact Us", icon: Mail, path: "/admin/contact-us" },        // ✅ NAYA
+  { name: "Subscribe Us", icon: Bell, path: "/admin/subscribe-us" },    // ✅ NAYA
 ];
 
 const Sidebar = ({ onLogout }) => {
@@ -60,9 +64,6 @@ const Sidebar = ({ onLogout }) => {
         style={{ backgroundImage: `url(/images/chi1.png)` }}
       >
         <div className="sidebar-footer-overlay" />
-       
-       
-
       </div>
     </aside>
   );

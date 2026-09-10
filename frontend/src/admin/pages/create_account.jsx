@@ -1,31 +1,38 @@
+// src/admin/pages/create_account.jsx
 import React, { useState } from "react";
-import { Eye, EyeOff, User, Mail, Lock, ChevronDown, UserPlus } from "lucide-react";
+import { useNavigate, Link } from "react-router-dom";
+import { Eye, EyeOff, User, Mail, Lock, UserPlus } from "lucide-react";
+import { adminRegister } from "../services/adminAuthService";
 import "./create_account.css";
 
 const CreateAccount = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
     password: "",
     confirmPassword: "",
-    role: "",
   });
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    if (error) setError("");
+    if (success) setSuccess("");
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setSuccess("");
 
-    if (!formData.fullName || !formData.email || !formData.password || !formData.confirmPassword || !formData.role) {
+    if (!formData.fullName || !formData.email || !formData.password || !formData.confirmPassword) {
       setError("Please fill in all fields");
       return;
     }
@@ -35,13 +42,26 @@ const CreateAccount = () => {
       return;
     }
 
+    if (formData.password.length < 6) {
+      setError("Password must be at least 6 characters");
+      return;
+    }
+
+    setLoading(true);
+
     try {
-      setLoading(true);
-      // TODO: apna API call yahan lagao
-      // const res = await axios.post("/api/admin/create-account", formData);
-      console.log("Submitting:", formData);
+      const result = await adminRegister(
+        formData.fullName,
+        formData.email,
+        formData.password
+      );
+      
+      setSuccess(result.message || "Admin created successfully!");
+      setFormData({ fullName: "", email: "", password: "", confirmPassword: "" });
+      
+      setTimeout(() => navigate("/admin/login"), 2000);
     } catch (err) {
-      setError("Something went wrong. Please try again.");
+      setError(err.message || "Something went wrong");
     } finally {
       setLoading(false);
     }
@@ -65,6 +85,7 @@ const CreateAccount = () => {
         <p className="form-description">Fill in the details to create a new admin</p>
 
         {error && <div className="error-message">{error}</div>}
+        {success && <div className="success-message">{success}</div>}
 
         <form onSubmit={handleSubmit} className="create-account-form">
           <div className="form-group">
@@ -141,8 +162,6 @@ const CreateAccount = () => {
             </div>
           </div>
 
-         
-
           <button type="submit" className="create-account-btn" disabled={loading}>
             <UserPlus size={18} />
             {loading ? "Creating..." : "CREATE ACCOUNT"}
@@ -150,7 +169,7 @@ const CreateAccount = () => {
         </form>
 
         <p className="login-redirect">
-          Already have an account? <a href="/admin/login">Login</a>
+          Already have an account? <Link to="/admin/login">Login</Link>
         </p>
       </div>
     </div>

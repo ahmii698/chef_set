@@ -786,6 +786,15 @@
   font-weight: 700;
 }
 
+/* Add to Products.css */
+.icon-btn.view {
+  color: #4caf7d;
+}
+
+.icon-btn.view:hover {
+  background-color: rgba(76, 175, 125, 0.12);
+}
+
 /* ===== Responsive ===== */
 @media (max-width: 1100px) {
   .product-form-grid {

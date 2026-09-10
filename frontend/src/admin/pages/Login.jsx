@@ -1,7 +1,8 @@
-// src/admin/pages/login.jsx
+// src/admin/pages/Login.jsx
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { adminLogin } from "../services/adminAuthService";
 import "./Login.css";
 
 const Login = () => {
@@ -11,8 +12,9 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
@@ -21,13 +23,21 @@ const Login = () => {
       return;
     }
 
-    // TODO: yahan apna real API call lagana (login validate karne ke liye)
-    localStorage.setItem("adminToken", "true");
-    if (rememberMe) {
-      localStorage.setItem("adminEmail", email);
-    }
+    setLoading(true);
 
-    navigate("/admin/dashboard");
+    try {
+      const result = await adminLogin(email, password);
+      
+      if (rememberMe) {
+        localStorage.setItem("adminEmail", email);
+      }
+      
+      navigate("/admin/dashboard");
+    } catch (err) {
+      setError(err.message || "Invalid credentials");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -35,7 +45,6 @@ const Login = () => {
       <div className="admin-login-topbar">ADMIN LOGIN PAGE</div>
 
       <div className="admin-login-card">
-        {/* Logo */}
         <div className="login-logo">
           <h1 className="login-logo-text">
             CHEF<span>SET</span>
@@ -43,13 +52,11 @@ const Login = () => {
           <p className="login-logo-subtitle">ADMIN PANEL</p>
         </div>
 
-        {/* Heading */}
         <div className="login-heading">
           <h2>Welcome Back!</h2>
           <p>Sign in to access the admin panel</p>
         </div>
 
-        {/* Form */}
         <form className="login-form" onSubmit={handleSubmit}>
           {error && <div className="login-error">{error}</div>}
 
@@ -100,12 +107,11 @@ const Login = () => {
             </Link>
           </div>
 
-          <button type="submit" className="login-btn">
-            LOGIN
+          <button type="submit" className="login-btn" disabled={loading}>
+            {loading ? "LOGGING IN..." : "LOGIN"}
           </button>
         </form>
 
-        {/* Create Account link */}
         <p className="create-account-text">
           Don't have an account?{" "}
           <Link to="/admin/create-account" className="create-account-link">
