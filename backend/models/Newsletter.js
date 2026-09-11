@@ -7,16 +7,20 @@ const newsletterSchema = new mongoose.Schema({
     required: true,
     unique: true,
     trim: true,
-    lowercase: true
+    lowercase: true,
   },
   subscribedAt: {
     type: Date,
-    default: Date.now
+    default: Date.now,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
   },
   isActive: {
     type: Boolean,
-    default: true
-  }
+    default: true,
+  },
 });
 
 module.exports = mongoose.model('Newsletter', newsletterSchema);

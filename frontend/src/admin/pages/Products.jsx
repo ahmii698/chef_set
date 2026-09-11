@@ -1,19 +1,163 @@
 // src/admin/pages/Products.jsx
 import React, { useState, useEffect, useRef } from "react";
 import {
-  ArrowLeft, Bold, Italic, Underline, List as ListIcon,
-  ListOrdered, Link as LinkIcon, Image as ImageIcon,
-  Plus, X, Pencil, Trash2, Search, Star, ChevronDown,
-  ChevronLeft, ChevronRight, Eye
+  ArrowLeft, Plus, X, Pencil, Trash2, Search, Star, ChevronDown,
+  ChevronLeft, ChevronRight, Eye, Check
 } from "lucide-react";
+import toast from "react-hot-toast";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
 import { getAdminToken } from "../services/adminAuthService";
 import { API_URL, STORAGE_URL } from "../../../config";
 import "./Products.css";
 
-const CATEGORIES = ["Cookware", "Knives", "Utensils", "Accessories", "Bakeware", "Storage", "Bowls"];
+// ✅ Preset categories (suggestions)
+const PRESET_CATEGORIES = [
+  "Cookware",
+  "Knives",
+  "Utensils",
+  "Accessories",
+  "Bakeware",
+  "Storage",
+  "Bowls",
+];
 
+// ==================== CUSTOM CATEGORY COMBOBOX ====================
+const CategoryCombobox = ({ value, onChange, suggestions, placeholder }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [highlightedIndex, setHighlightedIndex] = useState(-1);
+  const wrapperRef = useRef(null);
+  const inputRef = useRef(null);
+
+  const filteredSuggestions = suggestions.filter((cat) =>
+    cat.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const isNewCategory =
+    searchTerm.trim() &&
+    !suggestions.some((cat) => cat.toLowerCase() === searchTerm.toLowerCase());
+
+  useEffect(() => {
+    const handleClick = (e) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
+        setIsOpen(false);
+        setSearchTerm("");
+      }
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  useEffect(() => {
+    if (isOpen) setSearchTerm(value || "");
+  }, [isOpen, value]);
+
+  const handleSelect = (category) => {
+    onChange(category);
+    setIsOpen(false);
+    setSearchTerm("");
+  };
+
+  const handleInputChange = (e) => {
+    const val = e.target.value;
+    setSearchTerm(val);
+    onChange(val);
+    if (!isOpen) setIsOpen(true);
+    setHighlightedIndex(-1);
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setIsOpen(true);
+      setHighlightedIndex((prev) =>
+        prev < filteredSuggestions.length - 1 ? prev + 1 : prev
+      );
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setHighlightedIndex((prev) => (prev > 0 ? prev - 1 : 0));
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      if (highlightedIndex >= 0 && filteredSuggestions[highlightedIndex]) {
+        handleSelect(filteredSuggestions[highlightedIndex]);
+      } else if (searchTerm.trim()) {
+        handleSelect(searchTerm.trim());
+      }
+    } else if (e.key === "Escape") {
+      setIsOpen(false);
+      setSearchTerm("");
+    }
+  };
+
+  const handleAddNew = () => {
+    if (searchTerm.trim()) handleSelect(searchTerm.trim());
+  };
+
+  return (
+    <div className="cat-combobox" ref={wrapperRef}>
+      <div
+        className={`cat-combobox-input-wrapper ${isOpen ? "open" : ""}`}
+        onClick={() => {
+          setIsOpen(true);
+          inputRef.current?.focus();
+        }}
+      >
+        <input
+          ref={inputRef}
+          type="text"
+          value={searchTerm}
+          onChange={handleInputChange}
+          onKeyDown={handleKeyDown}
+          onFocus={() => setIsOpen(true)}
+          placeholder={placeholder || "Select or type category"}
+          autoComplete="off"
+        />
+        <ChevronDown
+          className={`cat-combobox-icon ${isOpen ? "rotated" : ""}`}
+          size={16}
+        />
+      </div>
+
+      {isOpen && (
+        <div className="cat-combobox-dropdown">
+          {isNewCategory && (
+            <div className="cat-combobox-add-new" onClick={handleAddNew}>
+              <Plus size={14} />
+              <span>
+                Add new: <strong>"{searchTerm.trim()}"</strong>
+              </span>
+            </div>
+          )}
+
+          {filteredSuggestions.length > 0 ? (
+            <div className="cat-combobox-list">
+              {filteredSuggestions.map((cat, idx) => (
+                <div
+                  key={cat}
+                  className={`cat-combobox-item ${
+                    idx === highlightedIndex ? "highlighted" : ""
+                  } ${cat === value ? "selected" : ""}`}
+                  onClick={() => handleSelect(cat)}
+                  onMouseEnter={() => setHighlightedIndex(idx)}
+                >
+                  <span>{cat}</span>
+                  {cat === value && <Check size={14} className="check-icon" />}
+                </div>
+              ))}
+            </div>
+          ) : (
+            !isNewCategory && (
+              <div className="cat-combobox-empty">No categories found</div>
+            )
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ==================== MAIN COMPONENT ====================
 const emptyForm = {
   name: "",
   category: "",
@@ -24,7 +168,7 @@ const emptyForm = {
   stock: "",
   status: "Active",
   featured: false,
-  images: [], // { id, url, file?, isExisting? }
+  images: [],
   mainImageId: null,
 };
 
@@ -47,22 +191,25 @@ const ProductsPage = () => {
   const formTopRef = useRef(null);
   const listRef = useRef(null);
 
+  const allCategories = React.useMemo(() => {
+    const fromProducts = products.map((p) => p.category).filter(Boolean);
+    const combined = [...new Set([...PRESET_CATEGORIES, ...fromProducts])];
+    return combined.sort();
+  }, [products]);
+
   // ===== FETCH PRODUCTS =====
   const fetchProducts = async () => {
     try {
       setLoading(true);
       const token = getAdminToken();
       const response = await fetch(`${API_URL}/admin-products`, {
-        headers: { 'Authorization': `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
       const data = await response.json();
-      if (response.ok) {
-        setProducts(data);
-      } else {
-        console.error('Error:', data.message);
-      }
+      if (response.ok) setProducts(data);
+      else console.error("Error:", data.message);
     } catch (error) {
-      console.error('Fetch error:', error);
+      console.error("Fetch error:", error);
     } finally {
       setLoading(false);
     }
@@ -76,6 +223,10 @@ const ProductsPage = () => {
   const handleFieldChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleCategoryChange = (value) => {
+    setForm((prev) => ({ ...prev, category: value }));
   };
 
   const handleToggleFeatured = () => {
@@ -106,9 +257,7 @@ const ProductsPage = () => {
     setForm((prev) => {
       const images = prev.images.filter((img) => img.id !== id);
       let mainImageId = prev.mainImageId;
-      if (mainImageId === id) {
-        mainImageId = images[0]?.id || null;
-      }
+      if (mainImageId === id) mainImageId = images[0]?.id || null;
       return { ...prev, images, mainImageId };
     });
   };
@@ -119,10 +268,18 @@ const ProductsPage = () => {
 
   const mainImage = form.images.find((img) => img.id === form.mainImageId) || null;
 
-  // ===== SUBMIT FORM =====
+  // ===== SUBMIT FORM (with toaster) =====
   const handleSubmit = async () => {
     if (!form.name || !form.category || !form.price || !form.stock) {
-      alert("Please fill all required fields (Name, Category, Price, Stock)");
+      toast.error("Please fill all required fields (Name, Category, Price, Stock)", {
+        duration: 3000,
+        style: {
+          background: "#3a1a1a",
+          color: "#ff6b6b",
+          border: "1px solid #ff6b6b",
+          fontWeight: "600",
+        },
+      });
       return;
     }
 
@@ -132,61 +289,82 @@ const ProductsPage = () => {
       const token = getAdminToken();
       const formData = new FormData();
 
-      // Add text fields
-      formData.append('name', form.name);
-      formData.append('category', form.category);
-      formData.append('price', form.price);
-      if (form.salePrice) formData.append('salePrice', form.salePrice);
-      formData.append('stock', form.stock);
-      formData.append('status', form.status);
-      formData.append('shortDesc', form.shortDesc);
-      formData.append('description', form.description);
-      formData.append('featured', form.featured);
+      formData.append("name", form.name);
+      formData.append("category", form.category.trim());
+      formData.append("price", form.price);
+      if (form.salePrice) formData.append("salePrice", form.salePrice);
+      formData.append("stock", form.stock);
+      formData.append("status", form.status);
+      formData.append("shortDesc", form.shortDesc);
+      formData.append("description", form.description);
+      formData.append("featured", form.featured);
 
-      // Handle images
       const existingImages = [];
       let mainIndex = 0;
 
       form.images.forEach((img, idx) => {
-        if (img.file) {
-          formData.append('images', img.file);
-        } else {
-          // Existing image (filename)
-          existingImages.push(img.url);
-        }
-        if (img.id === form.mainImageId) {
-          mainIndex = idx;
-        }
+        if (img.file) formData.append("images", img.file);
+        else existingImages.push(img.url);
+        if (img.id === form.mainImageId) mainIndex = idx;
       });
 
-      formData.append('existingImages', JSON.stringify(existingImages));
-      formData.append('mainImageIndex', mainIndex);
+      formData.append("existingImages", JSON.stringify(existingImages));
+      formData.append("mainImageIndex", mainIndex);
 
-      const url = editingId 
-        ? `${API_URL}/admin-products/${editingId}` 
+      const url = editingId
+        ? `${API_URL}/admin-products/${editingId}`
         : `${API_URL}/admin-products`;
-      
-      const method = editingId ? 'PUT' : 'POST';
+
+      const method = editingId ? "PUT" : "POST";
 
       const response = await fetch(url, {
         method,
-        headers: { 'Authorization': `Bearer ${token}` },
-        body: formData
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        alert(data.message || 'Product saved successfully!');
+        toast.success(
+          data.message ||
+            (editingId ? "Product updated! ✅" : "Product added! ✅"),
+          {
+            duration: 3000,
+            style: {
+              background: "#14321e",
+              color: "#4ade80",
+              border: "1px solid #4ade80",
+              fontWeight: "600",
+            },
+            icon: "🎉",
+          }
+        );
         resetForm();
         fetchProducts();
         listRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
       } else {
-        alert(data.message || 'Something went wrong');
+        toast.error(data.message || "Something went wrong", {
+          duration: 3000,
+          style: {
+            background: "#3a1a1a",
+            color: "#ff6b6b",
+            border: "1px solid #ff6b6b",
+            fontWeight: "600",
+          },
+        });
       }
     } catch (error) {
-      console.error('Save error:', error);
-      alert('Network error. Please try again.');
+      console.error("Save error:", error);
+      toast.error("Network error. Please try again.", {
+        duration: 3000,
+        style: {
+          background: "#3a1a1a",
+          color: "#ff6b6b",
+          border: "1px solid #ff6b6b",
+          fontWeight: "600",
+        },
+      });
     } finally {
       setSaving(false);
     }
@@ -197,9 +375,7 @@ const ProductsPage = () => {
     setEditingId(null);
   };
 
-  const handleCancel = () => {
-    resetForm();
-  };
+  const handleCancel = () => resetForm();
 
   // ===== EDIT =====
   const handleEdit = (product) => {
@@ -217,45 +393,139 @@ const ProductsPage = () => {
       images: (product.images || [product.image]).filter(Boolean).map((img, idx) => ({
         id: `existing-${idx}`,
         url: img,
-        isExisting: true
+        isExisting: true,
       })),
-      mainImageId: (product.images || [product.image]).findIndex(i => i === product.image) >= 0 
-        ? `existing-${(product.images || [product.image]).findIndex(i => i === product.image)}`
-        : `existing-0`,
+      mainImageId:
+        (product.images || [product.image]).findIndex((i) => i === product.image) >= 0
+          ? `existing-${(product.images || [product.image]).findIndex(
+              (i) => i === product.image
+            )}`
+          : `existing-0`,
     });
     formTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
-  // ===== DELETE =====
-  const handleDelete = async (id) => {
-    if (!window.confirm("Delete this product?")) return;
-
-    try {
-      const token = getAdminToken();
-      const response = await fetch(`${API_URL}/admin-products/${id}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-
-      if (response.ok) {
-        alert('Product deleted successfully');
-        fetchProducts();
+  // ===== DELETE (with custom toaster confirmation) =====
+  const handleDelete = (product) => {
+    toast(
+      (t) => (
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "12px",
+            minWidth: "280px",
+          }}
+        >
+          <span style={{ fontWeight: 600, fontSize: "14px" }}>
+            Delete this product?
+          </span>
+          <span style={{ fontSize: "12px", color: "#999" }}>
+            <strong style={{ color: "#e0983f" }}>{product.name}</strong> will be
+            permanently removed.
+          </span>
+          <div
+            style={{
+              display: "flex",
+              gap: "8px",
+              justifyContent: "flex-end",
+            }}
+          >
+            <button
+              onClick={() => toast.dismiss(t.id)}
+              style={{
+                padding: "6px 14px",
+                background: "transparent",
+                border: "1px solid rgba(255,255,255,0.2)",
+                borderRadius: "6px",
+                color: "#fff",
+                cursor: "pointer",
+                fontSize: "12px",
+                fontWeight: 600,
+              }}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={async () => {
+                toast.dismiss(t.id);
+                try {
+                  const token = getAdminToken();
+                  const response = await fetch(
+                    `${API_URL}/admin-products/${product._id}`,
+                    {
+                      method: "DELETE",
+                      headers: { Authorization: `Bearer ${token}` },
+                    }
+                  );
+                  if (response.ok) {
+                    toast.success("Product deleted! 🗑️", {
+                      duration: 3000,
+                      style: {
+                        background: "#14321e",
+                        color: "#4ade80",
+                        border: "1px solid #4ade80",
+                        fontWeight: "600",
+                      },
+                      icon: "🎉",
+                    });
+                    fetchProducts();
+                  } else {
+                    throw new Error("Failed to delete");
+                  }
+                } catch (error) {
+                  console.error("Delete error:", error);
+                  toast.error("Failed to delete product", {
+                    duration: 3000,
+                    style: {
+                      background: "#3a1a1a",
+                      color: "#ff6b6b",
+                      border: "1px solid #ff6b6b",
+                      fontWeight: "600",
+                    },
+                  });
+                }
+              }}
+              style={{
+                padding: "6px 14px",
+                background: "#e5484d",
+                border: "none",
+                borderRadius: "6px",
+                color: "#fff",
+                cursor: "pointer",
+                fontSize: "12px",
+                fontWeight: 600,
+              }}
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      ),
+      {
+        duration: 6000,
+        style: {
+          background: "#17171c",
+          color: "#fff",
+          border: "1px solid rgba(255,255,255,0.1)",
+          borderRadius: "10px",
+          padding: "16px",
+          maxWidth: "360px",
+        },
       }
-    } catch (error) {
-      console.error('Delete error:', error);
-      alert('Failed to delete product');
-    }
+    );
   };
 
-  // ===== VIEW LIVE =====
   const handleViewLive = (productId) => {
-    window.open(`/product/${productId}`, '_blank');
+    window.open(`/product/${productId}`, "_blank");
   };
 
   // ===== FILTERING + PAGINATION =====
   const filteredProducts = products.filter((p) => {
-    const matchCategory = filterCategory === "All Categories" || p.category === filterCategory;
-    const matchStatus = filterStatus === "All Status" || p.status === filterStatus;
+    const matchCategory =
+      filterCategory === "All Categories" || p.category === filterCategory;
+    const matchStatus =
+      filterStatus === "All Status" || p.status === filterStatus;
     const matchSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase());
     return matchCategory && matchStatus && matchSearch;
   });
@@ -286,7 +556,9 @@ const ProductsPage = () => {
             <button
               className="view-products-btn"
               type="button"
-              onClick={() => listRef.current?.scrollIntoView({ behavior: "smooth" })}
+              onClick={() =>
+                listRef.current?.scrollIntoView({ behavior: "smooth" })
+              }
             >
               View Products
             </button>
@@ -294,13 +566,14 @@ const ProductsPage = () => {
 
           {/* Form grid */}
           <div className="product-form-grid">
-            {/* Left: Basic info + images */}
             <div className="form-card">
               <h3 className="card-title">Basic Information</h3>
 
               <div className="form-row two-col">
                 <div className="form-field">
-                  <label>Product Name <span className="req">*</span></label>
+                  <label>
+                    Product Name <span className="req">*</span>
+                  </label>
                   <input
                     type="text"
                     name="name"
@@ -309,17 +582,17 @@ const ProductsPage = () => {
                     onChange={handleFieldChange}
                   />
                 </div>
+
                 <div className="form-field">
-                  <label>Category <span className="req">*</span></label>
-                  <div className="select-wrapper">
-                    <select name="category" value={form.category} onChange={handleFieldChange}>
-                      <option value="">Select category</option>
-                      {CATEGORIES.map((c) => (
-                        <option key={c} value={c}>{c}</option>
-                      ))}
-                    </select>
-                    <ChevronDown className="select-icon" size={16} />
-                  </div>
+                  <label>
+                    Category <span className="req">*</span>
+                  </label>
+                  <CategoryCombobox
+                    value={form.category}
+                    onChange={handleCategoryChange}
+                    suggestions={allCategories}
+                    placeholder="Select or type category"
+                  />
                 </div>
               </div>
 
@@ -355,7 +628,9 @@ const ProductsPage = () => {
                 <div className="section-header-row">
                   <div>
                     <h3 className="card-title">Product Images</h3>
-                    <p className="section-sub">Upload multiple images (max 5MB each)</p>
+                    <p className="section-sub">
+                      Upload multiple images (max 5MB each)
+                    </p>
                   </div>
                 </div>
 
@@ -363,13 +638,19 @@ const ProductsPage = () => {
                   {form.images.map((img) => (
                     <div
                       key={img.id}
-                      className={`image-thumb ${img.id === form.mainImageId ? "is-main" : ""}`}
+                      className={`image-thumb ${
+                        img.id === form.mainImageId ? "is-main" : ""
+                      }`}
                       onClick={() => setMainImage(img.id)}
                     >
-                      {img.id === form.mainImageId && <span className="main-badge">Main</span>}
-                      <img 
-                        src={img.isExisting ? `${STORAGE_URL}/${img.url}` : img.url} 
-                        alt="product" 
+                      {img.id === form.mainImageId && (
+                        <span className="main-badge">Main</span>
+                      )}
+                      <img
+                        src={
+                          img.isExisting ? `${STORAGE_URL}/${img.url}` : img.url
+                        }
+                        alt="product"
                       />
                       <button
                         type="button"
@@ -400,18 +681,20 @@ const ProductsPage = () => {
                 </div>
 
                 <p className="images-hint">
-                  Click an image to set it as Main. First image is main by default.
+                  Click an image to set it as Main. First image is main by
+                  default.
                 </p>
               </div>
             </div>
 
-            {/* Right: Pricing + Publishing */}
             <div className="form-card">
               <h3 className="card-title">Pricing &amp; Inventory</h3>
 
               <div className="form-row two-col">
                 <div className="form-field">
-                  <label>Price (PKR) <span className="req">*</span></label>
+                  <label>
+                    Price (PKR) <span className="req">*</span>
+                  </label>
                   <input
                     type="number"
                     name="price"
@@ -433,7 +716,9 @@ const ProductsPage = () => {
               </div>
 
               <div className="form-field">
-                <label>Stock <span className="req">*</span></label>
+                <label>
+                  Stock <span className="req">*</span>
+                </label>
                 <input
                   type="number"
                   name="stock"
@@ -446,7 +731,11 @@ const ProductsPage = () => {
               <div className="form-field">
                 <label>Status</label>
                 <div className="select-wrapper">
-                  <select name="status" value={form.status} onChange={handleFieldChange}>
+                  <select
+                    name="status"
+                    value={form.status}
+                    onChange={handleFieldChange}
+                  >
                     <option value="Active">Active</option>
                     <option value="Inactive">Inactive</option>
                   </select>
@@ -479,9 +768,13 @@ const ProductsPage = () => {
                   </div>
                   <div className="main-display-preview">
                     {mainImage ? (
-                      <img 
-                        src={mainImage.isExisting ? `${STORAGE_URL}/${mainImage.url}` : mainImage.url} 
-                        alt="main" 
+                      <img
+                        src={
+                          mainImage.isExisting
+                            ? `${STORAGE_URL}/${mainImage.url}`
+                            : mainImage.url
+                        }
+                        alt="main"
                       />
                     ) : (
                       <span className="no-image">No image</span>
@@ -491,16 +784,24 @@ const ProductsPage = () => {
               </div>
 
               <div className="form-actions">
-                <button type="button" className="cancel-btn" onClick={handleCancel}>
+                <button
+                  type="button"
+                  className="cancel-btn"
+                  onClick={handleCancel}
+                >
                   Cancel
                 </button>
-                <button 
-                  type="button" 
-                  className="save-btn" 
+                <button
+                  type="button"
+                  className="save-btn"
                   onClick={handleSubmit}
                   disabled={saving}
                 >
-                  {saving ? "Saving..." : editingId ? "Update Product" : "Save Product"}
+                  {saving
+                    ? "Saving..."
+                    : editingId
+                    ? "Update Product"
+                    : "Save Product"}
                 </button>
               </div>
             </div>
@@ -513,7 +814,11 @@ const ProductsPage = () => {
                 <h2>Products</h2>
                 <p>Manage all your products from here.</p>
               </div>
-              <button type="button" className="add-new-btn" onClick={handleCancel}>
+              <button
+                type="button"
+                className="add-new-btn"
+                onClick={handleCancel}
+              >
                 <Plus size={16} /> Add New Product
               </button>
             </div>
@@ -528,8 +833,10 @@ const ProductsPage = () => {
                   }}
                 >
                   <option>All Categories</option>
-                  {CATEGORIES.map((c) => (
-                    <option key={c} value={c}>{c}</option>
+                  {allCategories.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
                   ))}
                 </select>
                 <ChevronDown className="select-icon" size={16} />
@@ -583,11 +890,15 @@ const ProductsPage = () => {
                 <tbody>
                   {loading ? (
                     <tr>
-                      <td colSpan={10} className="empty-row">Loading...</td>
+                      <td colSpan={10} className="empty-row">
+                        Loading...
+                      </td>
                     </tr>
                   ) : paginatedProducts.length === 0 ? (
                     <tr>
-                      <td colSpan={10} className="empty-row">No products found.</td>
+                      <td colSpan={10} className="empty-row">
+                        No products found.
+                      </td>
                     </tr>
                   ) : (
                     paginatedProducts.map((p, idx) => (
@@ -595,7 +906,12 @@ const ProductsPage = () => {
                         <td>{startIdx + idx + 1}</td>
                         <td>
                           <div className="table-thumb">
-                            {p.image && <img src={`${STORAGE_URL}/${p.image}`} alt={p.name} />}
+                            {p.image && (
+                              <img
+                                src={`${STORAGE_URL}/${p.image}`}
+                                alt={p.name}
+                              />
+                            )}
                           </div>
                         </td>
                         <td>
@@ -608,12 +924,20 @@ const ProductsPage = () => {
                         <td>PKR {p.price.toLocaleString()}</td>
                         <td>
                           {p.salePrice ? (
-                            <span className="sale-price">PKR {p.salePrice.toLocaleString()}</span>
-                          ) : "—"}
+                            <span className="sale-price">
+                              PKR {p.salePrice.toLocaleString()}
+                            </span>
+                          ) : (
+                            "—"
+                          )}
                         </td>
                         <td>{p.stock}</td>
                         <td>
-                          <span className={`status-pill ${p.status === "Active" ? "active" : "inactive"}`}>
+                          <span
+                            className={`status-pill ${
+                              p.status === "Active" ? "active" : "inactive"
+                            }`}
+                          >
                             {p.status}
                           </span>
                         </td>
@@ -644,7 +968,7 @@ const ProductsPage = () => {
                           <button
                             type="button"
                             className="icon-btn delete"
-                            onClick={() => handleDelete(p._id)}
+                            onClick={() => handleDelete(p)}
                             title="Delete"
                           >
                             <Trash2 size={14} />
@@ -671,20 +995,24 @@ const ProductsPage = () => {
                 >
                   <ChevronLeft size={14} />
                 </button>
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => (
-                  <button
-                    key={num}
-                    type="button"
-                    className={num === safePage ? "active-page" : ""}
-                    onClick={() => setCurrentPage(num)}
-                  >
-                    {num}
-                  </button>
-                ))}
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                  (num) => (
+                    <button
+                      key={num}
+                      type="button"
+                      className={num === safePage ? "active-page" : ""}
+                      onClick={() => setCurrentPage(num)}
+                    >
+                      {num}
+                    </button>
+                  )
+                )}
                 <button
                   type="button"
                   disabled={safePage === totalPages}
-                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  onClick={() =>
+                    setCurrentPage((p) => Math.min(totalPages, p + 1))
+                  }
                 >
                   <ChevronRight size={14} />
                 </button>

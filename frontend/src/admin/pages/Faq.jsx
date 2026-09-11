@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import {
   Search, Filter, Plus, Edit, Trash2, HelpCircle,
-  CheckCircle, EyeOff, LayoutGrid, RefreshCw, X, Save
+  CheckCircle, EyeOff, RefreshCw, X, Save
 } from "lucide-react";
 import toast from "react-hot-toast";
 import Sidebar from "../components/Sidebar";
@@ -217,81 +217,70 @@ const FAQ = () => {
   };
 
   return (
-    <div className="faq-layout">
-      <div className={`sidebar-wrapper ${sidebarOpen ? "" : "collapsed"}`}>
+    <div className="admin_faq_layout">
+      <div className={`admin_faq_sidebar_wrapper ${sidebarOpen ? "" : "collapsed"}`}>
         <Sidebar />
       </div>
 
-      <div className="faq-main">
+      <div className="admin_faq_main">
         <Header onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
 
-        <div className="admin-faq-content">
+        <div className="admin_faq_content">
           {/* Header */}
-          <div className="faq-header">
+          <div className="admin_faq_header">
             <div>
-              <h1 className="faq-title">FAQ Management</h1>
-              <div className="faq-breadcrumb">
+              <h1 className="admin_faq_title">FAQ Management</h1>
+              <div className="admin_faq_breadcrumb">
                 <span>Dashboard</span>
-                <span className="breadcrumb-sep">›</span>
-                <span className="breadcrumb-active">FAQ</span>
+                <span className="admin_faq_breadcrumb_sep">›</span>
+                <span className="admin_faq_breadcrumb_active">FAQ</span>
               </div>
             </div>
-            <button className="btn-primary" onClick={handleAddNew}>
+            <button className="admin_faq_btn_primary" onClick={handleAddNew}>
               <Plus size={16} />
               Add New FAQ
             </button>
           </div>
 
-          {/* Stats Cards */}
-          <div className="stats-grid">
-            <div className="stat-card">
-              <div className="stat-icon">
+          {/* Stats Cards - 3 Only */}
+          <div className="admin_faq_stats_grid">
+            <div className="admin_faq_stat_card">
+              <div className="admin_faq_stat_icon">
                 <HelpCircle size={20} />
               </div>
               <div>
-                <p className="stat-label">Total FAQs</p>
-                <h2 className="stat-value">{stats.totalFaqs}</h2>
-                <p className="stat-sub">All Questions</p>
+                <p className="admin_faq_stat_label">Total FAQs</p>
+                <h2 className="admin_faq_stat_value">{stats.totalFaqs}</h2>
+                <p className="admin_faq_stat_sub">All Questions</p>
               </div>
             </div>
 
-            <div className="stat-card">
-              <div className="stat-icon">
+            <div className="admin_faq_stat_card">
+              <div className="admin_faq_stat_icon">
                 <CheckCircle size={20} />
               </div>
               <div>
-                <p className="stat-label">Active FAQs</p>
-                <h2 className="stat-value">{stats.activeFaqs}</h2>
-                <p className="stat-sub green">Visible on Website</p>
+                <p className="admin_faq_stat_label">Active FAQs</p>
+                <h2 className="admin_faq_stat_value">{stats.activeFaqs}</h2>
+                <p className="admin_faq_stat_sub green">Visible on Website</p>
               </div>
             </div>
 
-            <div className="stat-card">
-              <div className="stat-icon">
+            <div className="admin_faq_stat_card">
+              <div className="admin_faq_stat_icon">
                 <EyeOff size={20} />
               </div>
               <div>
-                <p className="stat-label">Inactive FAQs</p>
-                <h2 className="stat-value">{stats.inactiveFaqs}</h2>
-                <p className="stat-sub red">Hidden from Website</p>
-              </div>
-            </div>
-
-            <div className="stat-card">
-              <div className="stat-icon">
-                <LayoutGrid size={20} />
-              </div>
-              <div>
-                <p className="stat-label">Display Order</p>
-                <h2 className="stat-value">Manual</h2>
-                <p className="stat-sub">Change below</p>
+                <p className="admin_faq_stat_label">Inactive FAQs</p>
+                <h2 className="admin_faq_stat_value">{stats.inactiveFaqs}</h2>
+                <p className="admin_faq_stat_sub red">Hidden from Website</p>
               </div>
             </div>
           </div>
 
           {/* Filters Row */}
-          <div className="filters-row">
-            <div className="table-search">
+          <div className="admin_faq_filters_row">
+            <div className="admin_faq_table_search">
               <Search size={16} />
               <input
                 type="text"
@@ -305,7 +294,7 @@ const FAQ = () => {
             </div>
 
             <select
-              className="select-input"
+              className="admin_faq_select_input"
               value={statusFilter}
               onChange={(e) => {
                 setStatusFilter(e.target.value);
@@ -317,15 +306,15 @@ const FAQ = () => {
               <option>Inactive</option>
             </select>
 
-            <button className="btn-filter" onClick={fetchFaqs}>
+            <button className="admin_faq_btn_filter" onClick={fetchFaqs}>
               <RefreshCw size={14} />
               Refresh
             </button>
           </div>
 
           {/* Table */}
-          <div className="table-wrapper">
-            <table className="faq-table">
+          <div className="admin_faq_table_wrapper">
+            <table className="admin_faq_table">
               <thead>
                 <tr>
                   <th>#</th>
@@ -353,44 +342,42 @@ const FAQ = () => {
                   paginated.map((f, index) => (
                     <tr key={f._id}>
                       <td>{startIdx + index + 1}</td>
-                      <td className="question-cell">{f.question}</td>
-                      <td className="answer-cell">
-                        {f.answer.length > 100
-                          ? f.answer.substring(0, 100) + '...'
-                          : f.answer}
+                      <td className="admin_faq_question_cell">{f.question}</td>
+                      <td className="admin_faq_answer_cell">
+                        {f.answer}
                       </td>
                       <td>
-                        <label className="switch">
+                        <label className="admin_faq_switch">
                           <input
                             type="checkbox"
                             checked={f.isActive}
                             onChange={() => handleToggle(f)}
                           />
-                          <span className="slider" />
+                          <span className="admin_faq_slider" />
                         </label>
-                        <span className={`status-text ${f.isActive ? "active" : "inactive"}`}>
+                        <span className={`admin_faq_status_text ${f.isActive ? "active" : "inactive"}`}>
                           {f.isActive ? "Active" : "Inactive"}
                         </span>
                       </td>
                       <td>
                         <input
                           type="number"
-                          className="order-input"
+                          className="admin_faq_order_input"
                           value={f.order}
                           onChange={(e) => handleOrderChange(f, e.target.value)}
                         />
                       </td>
                       <td>
-                        <div className="action-btns">
+                        <div className="admin_faq_action_btns">
                           <button
-                            className="icon-btn edit"
+                            className="admin_faq_icon_btn edit"
                             onClick={() => handleEdit(f)}
                             title="Edit"
                           >
                             <Edit size={15} />
                           </button>
                           <button
-                            className="icon-btn delete"
+                            className="admin_faq_icon_btn delete"
                             onClick={() => handleDelete(f)}
                             title="Delete"
                           >
@@ -406,14 +393,14 @@ const FAQ = () => {
           </div>
 
           {/* Pagination */}
-          <div className="pagination-row">
+          <div className="admin_faq_pagination_row">
             <p>
               Showing {filtered.length === 0 ? 0 : startIdx + 1} to{" "}
               {Math.min(startIdx + ITEMS_PER_PAGE, filtered.length)} of {filtered.length} FAQs
             </p>
-            <div className="pagination-controls">
+            <div className="admin_faq_pagination_controls">
               <button
-                className="page-btn"
+                className="admin_faq_page_btn"
                 disabled={safePage === 1}
                 onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
               >
@@ -424,10 +411,10 @@ const FAQ = () => {
                 .map((num, idx, arr) => (
                   <React.Fragment key={num}>
                     {idx > 0 && arr[idx - 1] !== num - 1 && (
-                      <span className="page-dots">...</span>
+                      <span className="admin_faq_page_dots">...</span>
                     )}
                     <button
-                      className={`page-btn ${safePage === num ? "active" : ""}`}
+                      className={`admin_faq_page_btn ${safePage === num ? "active" : ""}`}
                       onClick={() => setCurrentPage(num)}
                     >
                       {num}
@@ -435,7 +422,7 @@ const FAQ = () => {
                   </React.Fragment>
                 ))}
               <button
-                className="page-btn"
+                className="admin_faq_page_btn"
                 disabled={safePage === totalPages}
                 onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
               >
@@ -448,22 +435,22 @@ const FAQ = () => {
 
       {/* ===== MODAL ===== */}
       {showModal && (
-        <div className="modal-overlay" onClick={closeModal}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
+        <div className="admin_faq_modal_overlay" onClick={closeModal}>
+          <div className="admin_faq_modal_content" onClick={(e) => e.stopPropagation()}>
+            <div className="admin_faq_modal_header">
               <div>
                 <h2>{editingId ? "Edit FAQ" : "Add New FAQ"}</h2>
-                <p className="modal-subtitle">
+                <p className="admin_faq_modal_subtitle">
                   {editingId ? "Update FAQ details" : "Fill in the details below"}
                 </p>
               </div>
-              <button className="modal-close" onClick={closeModal}>
+              <button className="admin_faq_modal_close" onClick={closeModal}>
                 <X size={20} />
               </button>
             </div>
 
-            <div className="modal-body">
-              <div className="form-group">
+            <div className="admin_faq_modal_body">
+              <div className="admin_faq_form_group">
                 <label>Question *</label>
                 <input
                   type="text"
@@ -474,7 +461,7 @@ const FAQ = () => {
                 />
               </div>
 
-              <div className="form-group">
+              <div className="admin_faq_form_group">
                 <label>Answer *</label>
                 <textarea
                   name="answer"
@@ -485,8 +472,8 @@ const FAQ = () => {
                 />
               </div>
 
-              <div className="form-row-2">
-                <div className="form-group">
+              <div className="admin_faq_form_row_2">
+                <div className="admin_faq_form_group">
                   <label>Category</label>
                   <input
                     type="text"
@@ -497,7 +484,7 @@ const FAQ = () => {
                   />
                 </div>
 
-                <div className="form-group">
+                <div className="admin_faq_form_group">
                   <label>Display Order</label>
                   <input
                     type="number"
@@ -509,8 +496,8 @@ const FAQ = () => {
                 </div>
               </div>
 
-              <div className="form-group toggle-group">
-                <label className="switch-label">
+              <div className="admin_faq_form_group admin_faq_toggle_group">
+                <label className="admin_faq_switch_label">
                   <input
                     type="checkbox"
                     name="isActive"
@@ -522,11 +509,11 @@ const FAQ = () => {
               </div>
             </div>
 
-            <div className="modal-footer">
-              <button className="cancel-btn" onClick={closeModal}>
+            <div className="admin_faq_modal_footer">
+              <button className="admin_faq_cancel_btn" onClick={closeModal}>
                 Cancel
               </button>
-              <button className="save-btn" onClick={handleSave} disabled={saving}>
+              <button className="admin_faq_save_btn" onClick={handleSave} disabled={saving}>
                 <Save size={16} />
                 {saving ? "Saving..." : editingId ? "Update" : "Create"}
               </button>

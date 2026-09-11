@@ -1,96 +1,68 @@
-// src/admin/pages/CategoryPage.jsx
-import React, { useState, useMemo } from "react";
-import { Pencil, Trash2, Plus, Folder, CheckCircle2, EyeOff, Grid3x3, ChevronLeft, ChevronRight } from "lucide-react";
+// src/admin/pages/category.jsx
+import React, { useState, useEffect, useMemo, useRef } from "react";
+import {
+  Pencil, Trash2, Plus, Folder, CheckCircle2, EyeOff,
+  ChevronLeft, ChevronRight, X, Save, Upload, Image as ImageIcon
+} from "lucide-react";
+import toast from "react-hot-toast";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
+import { API_URL, STORAGE_URL } from "../../../config";
 import "./category.css";
-
-// Dummy initial data — replace with API data as needed
-const initialCategories = [
-  {
-    id: 1,
-    image: "https://placehold.co/60x60/2a2a2a/f5a623?text=K",
-    name: "Kitchen Knives",
-    description: "Premium quality kitchen knives",
-    order: 1,
-    active: true,
-    createdAt: "May 25, 2025",
-    createdTime: "10:30 AM",
-  },
-  {
-    id: 2,
-    image: "https://placehold.co/60x60/2a2a2a/f5a623?text=C",
-    name: "Cookware",
-    description: "Pots, pans and cooking sets",
-    order: 2,
-    active: true,
-    createdAt: "May 25, 2025",
-    createdTime: "10:35 AM",
-  },
-  {
-    id: 3,
-    image: "https://placehold.co/60x60/2a2a2a/f5a623?text=U",
-    name: "Kitchen Utensils",
-    description: "Essential cooking tools",
-    order: 3,
-    active: true,
-    createdAt: "May 25, 2025",
-    createdTime: "10:40 AM",
-  },
-  {
-    id: 4,
-    image: "https://placehold.co/60x60/2a2a2a/f5a623?text=A",
-    name: "Kitchen Appliances",
-    description: "Modern kitchen appliances",
-    order: 4,
-    active: false,
-    createdAt: "May 25, 2025",
-    createdTime: "10:42 AM",
-  },
-  {
-    id: 5,
-    image: "https://placehold.co/60x60/2a2a2a/f5a623?text=B",
-    name: "Bakeware",
-    description: "Baking trays and accessories",
-    order: 5,
-    active: true,
-    createdAt: "May 25, 2025",
-    createdTime: "10:45 AM",
-  },
-  {
-    id: 6,
-    image: "https://placehold.co/60x60/2a2a2a/f5a623?text=S",
-    name: "Storage & Organization",
-    description: "Kitchen storage solutions",
-    order: 6,
-    active: false,
-    createdAt: "May 25, 2025",
-    createdTime: "10:50 AM",
-  },
-  {
-    id: 7,
-    image: "https://placehold.co/60x60/2a2a2a/f5a623?text=Cu",
-    name: "Cutlery",
-    description: "Spoons, forks and more",
-    order: 7,
-    active: true,
-    createdAt: "May 25, 2025",
-    createdTime: "10:55 AM",
-  },
-];
 
 const PER_PAGE_OPTIONS = [10, 20, 50];
 
 export default function CategoryPage() {
-  const [sidebarOpen, setSidebarOpen] = useState(true); // ← Sidebar state add karo
-  const [categories, setCategories] = useState(initialCategories);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [homeData, setHomeData] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [perPage, setPerPage] = useState(10);
   const [page, setPage] = useState(1);
-  const [draggedId, setDraggedId] = useState(null);
 
+  // Modal state
+  const [showModal, setShowModal] = useState(false);
+  const [editingIndex, setEditingIndex] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef(null);
+
+  const [form, setForm] = useState({
+    name: "",
+    image: "",
+    buttonText: "SHOP NOW",
+    order: 0,
+  });
+
+  // ===== FETCH DATA FROM API =====
+  const fetchHomeCategory = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch(`${API_URL}/home-category`);
+      const data = await res.json();
+      setHomeData(data);
+    } catch (error) {
+      toast.error("Failed to load categories", {
+        duration: 3000,
+        style: {
+          background: "#3a1a1a",
+          color: "#ff6b6b",
+          border: "1px solid #ff6b6b",
+          fontWeight: "600",
+        },
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchHomeCategory();
+  }, []);
+
+  const categories = homeData?.categories || [];
   const totalCategories = categories.length;
-  const activeCount = categories.filter((c) => c.active).length;
-  const inactiveCount = categories.filter((c) => !c.active).length;
+  const activeCount = homeData?.isActive ? totalCategories : 0;
+  const inactiveCount = homeData?.isActive ? 0 : totalCategories;
 
   const totalPages = Math.max(1, Math.ceil(categories.length / perPage));
 
@@ -99,47 +71,343 @@ export default function CategoryPage() {
     return categories.slice(start, start + perPage);
   }, [categories, page, perPage]);
 
-  const toggleActive = (id) => {
-    setCategories((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, active: !c.active } : c))
-    );
+  // ===== HELPER: Image URL banao =====
+  const getImageUrl = (img) => {
+    if (!img) return "https://placehold.co/60x60/2a2a2a/f5a623?text=?";
+    if (img.startsWith("http")) return img;
+    return `${STORAGE_URL}/${img}`;
   };
 
-  const handleDelete = (id) => {
-    if (window.confirm("Are you sure you want to delete this category?")) {
-      setCategories((prev) => prev.filter((c) => c.id !== id));
+  // ===== MODAL HANDLERS =====
+  const handleAddNew = () => {
+    setForm({
+      name: "",
+      image: "",
+      buttonText: "SHOP NOW",
+      order: categories.length + 1,
+    });
+    setEditingIndex(null);
+    setShowModal(true);
+  };
+
+  const handleEdit = (index) => {
+    const cat = categories[index];
+    setForm({
+      name: cat.name || "",
+      image: cat.image || "",
+      buttonText: cat.buttonText || "SHOP NOW",
+      order: cat.order || 0,
+    });
+    setEditingIndex(index);
+    setShowModal(true);
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+    setEditingIndex(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // ===== IMAGE UPLOAD =====
+  const handleImageUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Sirf image files allowed hain", {
+        duration: 3000,
+        style: {
+          background: "#3a1a1a",
+          color: "#ff6b6b",
+          border: "1px solid #ff6b6b",
+          fontWeight: "600",
+        },
+      });
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image 5MB se choti honi chahiye", {
+        duration: 3000,
+        style: {
+          background: "#3a1a1a",
+          color: "#ff6b6b",
+          border: "1px solid #ff6b6b",
+          fontWeight: "600",
+        },
+      });
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("image", file);
+
+      const res = await fetch(`${API_URL}/upload/image`, {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!res.ok) throw new Error("Upload failed");
+
+      const data = await res.json();
+      setForm((prev) => ({ ...prev, image: data.filename }));
+      toast.success("Image uploaded!", {
+        duration: 3000,
+        style: {
+          background: "#14321e",
+          color: "#4ade80",
+          border: "1px solid #4ade80",
+          fontWeight: "600",
+        },
+        icon: "🎉",
+      });
+    } catch (error) {
+      toast.error("Image upload nahi hui. Try again.", {
+        duration: 3000,
+        style: {
+          background: "#3a1a1a",
+          color: "#ff6b6b",
+          border: "1px solid #ff6b6b",
+          fontWeight: "600",
+        },
+      });
+    } finally {
+      setUploading(false);
     }
   };
 
-  const handleEdit = (id) => {
-    console.log("Edit category:", id);
+  // ===== SAVE (ADD / EDIT) =====
+  const handleSave = async () => {
+    if (!form.name.trim()) {
+      toast.error("Category Name zaroori hai", {
+        duration: 3000,
+        style: {
+          background: "#3a1a1a",
+          color: "#ff6b6b",
+          border: "1px solid #ff6b6b",
+          fontWeight: "600",
+        },
+      });
+      return;
+    }
+    if (!form.image) {
+      toast.error("Image upload karo", {
+        duration: 3000,
+        style: {
+          background: "#3a1a1a",
+          color: "#ff6b6b",
+          border: "1px solid #ff6b6b",
+          fontWeight: "600",
+        },
+      });
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const autoLink = `/products?category=${form.name
+        .toLowerCase()
+        .replace(/\s+/g, "-")}`;
+
+      const categoryData = {
+        name: form.name,
+        image: form.image,
+        link: autoLink,
+        buttonText: form.buttonText || "SHOP NOW",
+        order: Number(form.order) || 0,
+      };
+
+      let updatedCategories = [...categories];
+
+      if (editingIndex !== null) {
+        categoryData.link = categories[editingIndex].link || autoLink;
+        updatedCategories[editingIndex] = categoryData;
+      } else {
+        updatedCategories.push(categoryData);
+      }
+
+      updatedCategories.sort((a, b) => a.order - b.order);
+
+      const res = await fetch(`${API_URL}/home-category/${homeData._id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ categories: updatedCategories }),
+      });
+
+      if (!res.ok) throw new Error("Failed to save");
+
+      const savedData = await res.json();
+      setHomeData(savedData);
+      toast.success(
+        editingIndex !== null ? "Category updated! ✅" : "Category added! ✅",
+        {
+          duration: 3000,
+          style: {
+            background: "#14321e",
+            color: "#4ade80",
+            border: "1px solid #4ade80",
+            fontWeight: "600",
+          },
+          icon: "🎉",
+        }
+      );
+      closeModal();
+    } catch (error) {
+      toast.error("Failed to save category", {
+        duration: 3000,
+        style: {
+          background: "#3a1a1a",
+          color: "#ff6b6b",
+          border: "1px solid #ff6b6b",
+          fontWeight: "600",
+        },
+      });
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const handleAddNew = () => {
-    console.log("Add new category clicked");
+  // ===== DELETE (with custom toaster confirmation) =====
+  const handleDelete = (index) => {
+    const cat = categories[index];
+
+    toast(
+      (t) => (
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "12px",
+            minWidth: "280px",
+          }}
+        >
+          <span style={{ fontWeight: 600, fontSize: "14px" }}>
+            Delete this category?
+          </span>
+          <span style={{ fontSize: "12px", color: "#999" }}>
+            <strong style={{ color: "#e0983f" }}>{cat.name}</strong> will be
+            permanently removed from the website.
+          </span>
+          <div
+            style={{
+              display: "flex",
+              gap: "8px",
+              justifyContent: "flex-end",
+            }}
+          >
+            <button
+              onClick={() => toast.dismiss(t.id)}
+              style={{
+                padding: "6px 14px",
+                background: "transparent",
+                border: "1px solid rgba(255,255,255,0.2)",
+                borderRadius: "6px",
+                color: "#fff",
+                cursor: "pointer",
+                fontSize: "12px",
+                fontWeight: 600,
+              }}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={async () => {
+                toast.dismiss(t.id);
+                try {
+                  const updatedCategories = categories.filter(
+                    (_, i) => i !== index
+                  );
+
+                  const res = await fetch(
+                    `${API_URL}/home-category/${homeData._id}`,
+                    {
+                      method: "PUT",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ categories: updatedCategories }),
+                    }
+                  );
+
+                  if (!res.ok) throw new Error("Failed to delete");
+
+                  const savedData = await res.json();
+                  setHomeData(savedData);
+
+                  toast.success("Category deleted! 🗑️", {
+                    duration: 3000,
+                    style: {
+                      background: "#14321e",
+                      color: "#4ade80",
+                      border: "1px solid #4ade80",
+                      fontWeight: "600",
+                    },
+                    icon: "🎉",
+                  });
+                } catch (error) {
+                  toast.error("Failed to delete", {
+                    duration: 3000,
+                    style: {
+                      background: "#3a1a1a",
+                      color: "#ff6b6b",
+                      border: "1px solid #ff6b6b",
+                      fontWeight: "600",
+                    },
+                  });
+                }
+              }}
+              style={{
+                padding: "6px 14px",
+                background: "#e5484d",
+                border: "none",
+                borderRadius: "6px",
+                color: "#fff",
+                cursor: "pointer",
+                fontSize: "12px",
+                fontWeight: 600,
+              }}
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      ),
+      {
+        duration: 6000,
+        style: {
+          background: "#17171c",
+          color: "#fff",
+          border: "1px solid rgba(255,255,255,0.1)",
+          borderRadius: "10px",
+          padding: "16px",
+          maxWidth: "360px",
+        },
+      }
+    );
   };
 
-  const handleDragStart = (id) => setDraggedId(id);
-  const handleDragOver = (e) => e.preventDefault();
-
-  const handleDrop = (targetId) => {
-    if (draggedId === null || draggedId === targetId) return;
-    setCategories((prev) => {
-      const list = [...prev];
-      const fromIndex = list.findIndex((c) => c.id === draggedId);
-      const toIndex = list.findIndex((c) => c.id === targetId);
-      const [moved] = list.splice(fromIndex, 1);
-      list.splice(toIndex, 0, moved);
-      return list.map((c, idx) => ({ ...c, order: idx + 1 }));
-    });
-    setDraggedId(null);
+  // ===== UPDATE TITLE / SUBTITLE =====
+  const handleHeaderUpdate = async (field, value) => {
+    setHomeData((prev) => ({ ...prev, [field]: value }));
+    try {
+      await fetch(`${API_URL}/home-category/${homeData._id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ [field]: value }),
+      });
+    } catch (error) {
+      console.error("Failed to update header");
+    }
   };
 
   const showingFrom = categories.length === 0 ? 0 : (page - 1) * perPage + 1;
   const showingTo = Math.min(page * perPage, categories.length);
 
   return (
-    // ✅ SAHI - Products page ki tarah layout
     <div className="categories-layout">
       <div className={`sidebar-wrapper ${sidebarOpen ? "" : "collapsed"}`}>
         <Sidebar />
@@ -152,11 +420,11 @@ export default function CategoryPage() {
           {/* Header */}
           <div className="cat-header">
             <div>
-              <h1 className="cat-title">Categories</h1>
+              <h1 className="cat-title">Shop By Category</h1>
               <div className="cat-breadcrumb">
                 <span>Dashboard</span>
                 <span className="cat-breadcrumb-sep">›</span>
-                <span className="cat-breadcrumb-current">Categories</span>
+                <span className="cat-breadcrumb-current">Home Category</span>
               </div>
             </div>
             <button className="cat-btn-primary" onClick={handleAddNew}>
@@ -164,6 +432,30 @@ export default function CategoryPage() {
               Add New Category
             </button>
           </div>
+
+          {/* Title & Subtitle Edit */}
+          {homeData && (
+            <div className="cat-section-header">
+              <div className="cat-form-group">
+                <label>Section Title</label>
+                <input
+                  type="text"
+                  value={homeData.title || ""}
+                  onChange={(e) => handleHeaderUpdate("title", e.target.value)}
+                  placeholder="e.g. SHOP BY CATEGORY"
+                />
+              </div>
+              <div className="cat-form-group">
+                <label>Section Subtitle</label>
+                <input
+                  type="text"
+                  value={homeData.subtitle || ""}
+                  onChange={(e) => handleHeaderUpdate("subtitle", e.target.value)}
+                  placeholder="e.g. COLLECTIONS"
+                />
+              </div>
+            </div>
+          )}
 
           {/* Stats Cards */}
           <div className="cat-stats-grid">
@@ -199,17 +491,6 @@ export default function CategoryPage() {
                 <div className="cat-stat-sub">Hidden from Website</div>
               </div>
             </div>
-
-            <div className="cat-stat-card">
-              <div className="cat-stat-icon cat-stat-icon-orange">
-                <Grid3x3 size={20} />
-              </div>
-              <div>
-                <div className="cat-stat-label">Display Order</div>
-                <div className="cat-stat-value cat-stat-value-sm">Drag &amp; Drop</div>
-                <div className="cat-stat-sub">Sort Categories Easily</div>
-              </div>
-            </div>
           </div>
 
           {/* Table */}
@@ -220,101 +501,76 @@ export default function CategoryPage() {
                   <th>#</th>
                   <th>Image</th>
                   <th>Category Name</th>
-                  <th>Display Order</th>
-                  <th>Status (Home)</th>
-                  <th>Created At</th>
+                  <th>Button Text</th>
+                  <th>Order</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {paginated.map((cat, idx) => (
-                  <tr
-                    key={cat.id}
-                    draggable
-                    onDragStart={() => handleDragStart(cat.id)}
-                    onDragOver={handleDragOver}
-                    onDrop={() => handleDrop(cat.id)}
-                    className={draggedId === cat.id ? "cat-row-dragging" : ""}
-                  >
-                    <td>{(page - 1) * perPage + idx + 1}</td>
-                    <td>
-                      <img src={cat.image} alt={cat.name} className="cat-thumb" />
-                    </td>
-                    <td>
-                      <div className="cat-name">{cat.name}</div>
-                      <div className="cat-desc">{cat.description}</div>
-                    </td>
-                    <td>
-                      <input
-                        type="number"
-                        className="cat-order-input"
-                        value={cat.order}
-                        onChange={(e) => {
-                          const val = Number(e.target.value);
-                          setCategories((prev) =>
-                            prev.map((c) =>
-                              c.id === cat.id ? { ...c, order: val } : c
-                            )
-                          );
-                        }}
-                      />
-                    </td>
-                    <td>
-                      <label className="cat-switch">
-                        <input
-                          type="checkbox"
-                          checked={cat.active}
-                          onChange={() => toggleActive(cat.id)}
-                        />
-                        <span className="cat-slider" />
-                      </label>
-                      <span
-                        className={
-                          cat.active ? "cat-status-active" : "cat-status-inactive"
-                        }
-                      >
-                        {cat.active ? "Active" : "Inactive"}
-                      </span>
-                    </td>
-                    <td>
-                      <div className="cat-date">{cat.createdAt}</div>
-                      <div className="cat-time">{cat.createdTime}</div>
-                    </td>
-                    <td>
-                      <div className="cat-actions">
-                        <button
-                          className="cat-action-btn cat-edit-btn"
-                          onClick={() => handleEdit(cat.id)}
-                          aria-label="Edit category"
-                        >
-                          <Pencil size={15} />
-                        </button>
-                        <button
-                          className="cat-action-btn cat-delete-btn"
-                          onClick={() => handleDelete(cat.id)}
-                          aria-label="Delete category"
-                        >
-                          <Trash2 size={15} />
-                        </button>
-                      </div>
+                {loading ? (
+                  <tr>
+                    <td colSpan={6} style={{ textAlign: "center", padding: "30px" }}>
+                      Loading...
                     </td>
                   </tr>
-                ))}
-                {paginated.length === 0 && (
+                ) : paginated.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="cat-empty">
+                    <td colSpan={6} className="cat-empty">
                       No categories found.
                     </td>
                   </tr>
+                ) : (
+                  paginated.map((cat, idx) => (
+                    <tr key={idx}>
+                      <td>{(page - 1) * perPage + idx + 1}</td>
+                      <td>
+                        <img
+                          src={getImageUrl(cat.image)}
+                          alt={cat.name}
+                          className="cat-thumb"
+                          onError={(e) => {
+                            e.target.src =
+                              "https://placehold.co/60x60/2a2a2a/f5a623?text=?";
+                          }}
+                        />
+                      </td>
+                      <td>
+                        <div className="cat-name">{cat.name}</div>
+                      </td>
+                      <td>
+                        <div className="cat-desc">{cat.buttonText || "SHOP NOW"}</div>
+                      </td>
+                      <td>
+                        <div className="cat-desc">{cat.order}</div>
+                      </td>
+                      <td>
+                        <div className="cat-actions">
+                          <button
+                            className="cat-action-btn cat-edit-btn"
+                            onClick={() => handleEdit((page - 1) * perPage + idx)}
+                            aria-label="Edit"
+                          >
+                            <Pencil size={15} />
+                          </button>
+                          <button
+                            className="cat-action-btn cat-delete-btn"
+                            onClick={() => handleDelete((page - 1) * perPage + idx)}
+                            aria-label="Delete"
+                          >
+                            <Trash2 size={15} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
                 )}
               </tbody>
             </table>
 
-            {/* Footer / Pagination */}
+            {/* Footer */}
             <div className="cat-table-footer">
               <div className="cat-showing">
-                Showing {showingFrom} to {showingTo} of {categories.length}{" "}
-                categories
+                Showing {showingFrom} to {showingTo} of {categories.length} categories
               </div>
               <div className="cat-pagination">
                 <select
@@ -344,7 +600,9 @@ export default function CategoryPage() {
                   <button
                     key={p}
                     className={
-                      p === page ? "cat-page-num cat-page-num-active" : "cat-page-num"
+                      p === page
+                        ? "cat-page-num cat-page-num-active"
+                        : "cat-page-num"
                     }
                     onClick={() => setPage(p)}
                   >
@@ -364,6 +622,125 @@ export default function CategoryPage() {
           </div>
         </div>
       </div>
+
+      {/* ===== MODAL ===== */}
+      {showModal && (
+        <div className="cat-modal-overlay" onClick={closeModal}>
+          <div className="cat-modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="cat-modal-header">
+              <h2>{editingIndex !== null ? "Edit Category" : "Add New Category"}</h2>
+              <button className="cat-modal-close" onClick={closeModal}>
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="cat-modal-body">
+              <div className="cat-form-group">
+                <label>Category Name *</label>
+                <input
+                  type="text"
+                  name="name"
+                  value={form.name}
+                  onChange={handleChange}
+                  placeholder="e.g. Utensils"
+                />
+              </div>
+
+              <div className="cat-form-group">
+                <label>Image *</label>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  style={{ display: "none" }}
+                />
+
+                {!form.image ? (
+                  <button
+                    type="button"
+                    className="cat-upload-btn"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploading}
+                  >
+                    <Upload size={16} />
+                    {uploading ? "Uploading..." : "Choose Image from Computer"}
+                  </button>
+                ) : (
+                  <div className="cat-upload-preview-wrapper">
+                    <div className="cat-image-preview">
+                      <img
+                        src={getImageUrl(form.image)}
+                        alt="Preview"
+                        onError={(e) => {
+                          e.target.src =
+                            "https://placehold.co/200x150/2a2a2a/f5a623?text=?";
+                        }}
+                      />
+                    </div>
+                    <div className="cat-upload-actions">
+                      <button
+                        type="button"
+                        className="cat-change-img-btn"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={uploading}
+                      >
+                        <ImageIcon size={14} />
+                        {uploading ? "Uploading..." : "Change Image"}
+                      </button>
+                      <button
+                        type="button"
+                        className="cat-remove-img-btn"
+                        onClick={() =>
+                          setForm((prev) => ({ ...prev, image: "" }))
+                        }
+                      >
+                        <Trash2 size={14} />
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="cat-form-row">
+                <div className="cat-form-group">
+                  <label>Button Text</label>
+                  <input
+                    type="text"
+                    name="buttonText"
+                    value={form.buttonText}
+                    onChange={handleChange}
+                    placeholder="SHOP NOW"
+                  />
+                </div>
+                <div className="cat-form-group">
+                  <label>Display Order</label>
+                  <input
+                    type="number"
+                    name="order"
+                    value={form.order}
+                    onChange={handleChange}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="cat-modal-footer">
+              <button className="cat-cancel-btn" onClick={closeModal}>
+                Cancel
+              </button>
+              <button
+                className="cat-save-btn"
+                onClick={handleSave}
+                disabled={saving || uploading}
+              >
+                <Save size={16} /> {saving ? "Saving..." : "Save"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -20,7 +20,7 @@ const SubscribeUs = () => {
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     totalSubscribers: 0,
-    activeSubscribers: 0
+    activeSubscribers: 0,
   });
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -33,7 +33,15 @@ const SubscribeUs = () => {
       setSubscribers(data.subscribers || []);
       setStats(data.stats || { totalSubscribers: 0, activeSubscribers: 0 });
     } catch (error) {
-      toast.error("Failed to fetch subscribers");
+      toast.error("Failed to fetch subscribers", {
+        duration: 3000,
+        style: {
+          background: "#3a1a1a",
+          color: "#ff6b6b",
+          border: "1px solid #ff6b6b",
+          fontWeight: "600",
+        },
+      });
     } finally {
       setLoading(false);
     }
@@ -56,19 +64,106 @@ const SubscribeUs = () => {
   const startIdx = (safePage - 1) * ITEMS_PER_PAGE;
   const paginated = filtered.slice(startIdx, startIdx + ITEMS_PER_PAGE);
 
-  // ===== DELETE =====
-  const handleDelete = async (sub) => {
-    const confirmed = window.confirm(`Remove subscriber "${sub.email}"?`);
-    if (!confirmed) return;
-
-    try {
-      await deleteSubscriber(sub._id);
-      toast.success('Subscriber removed! 🗑️');
-      setSubscribers(prev => prev.filter(x => x._id !== sub._id));
-      fetchSubscribers();
-    } catch (error) {
-      toast.error(error.message || 'Failed to delete');
-    }
+  // ===== DELETE (with custom toaster confirmation) =====
+  const handleDelete = (sub) => {
+    toast(
+      (t) => (
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "12px",
+            minWidth: "260px",
+          }}
+        >
+          <span style={{ fontWeight: 600, fontSize: "14px" }}>
+            Remove this subscriber?
+          </span>
+          <span style={{ fontSize: "12px", color: "#999" }}>
+            <strong style={{ color: "#e0983f" }}>{sub.email}</strong> will be
+            removed from the newsletter list.
+          </span>
+          <div
+            style={{
+              display: "flex",
+              gap: "8px",
+              justifyContent: "flex-end",
+            }}
+          >
+            <button
+              onClick={() => toast.dismiss(t.id)}
+              style={{
+                padding: "6px 14px",
+                background: "transparent",
+                border: "1px solid rgba(255,255,255,0.2)",
+                borderRadius: "6px",
+                color: "#fff",
+                cursor: "pointer",
+                fontSize: "12px",
+                fontWeight: 600,
+              }}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={async () => {
+                toast.dismiss(t.id);
+                try {
+                  await deleteSubscriber(sub._id);
+                  toast.success("Subscriber removed! 🗑️", {
+                    duration: 3000,
+                    style: {
+                      background: "#14321e",
+                      color: "#4ade80",
+                      border: "1px solid #4ade80",
+                      fontWeight: "600",
+                    },
+                    icon: "🎉",
+                  });
+                  setSubscribers((prev) =>
+                    prev.filter((x) => x._id !== sub._id)
+                  );
+                  fetchSubscribers();
+                } catch (error) {
+                  toast.error(error.message || "Failed to delete", {
+                    duration: 3000,
+                    style: {
+                      background: "#3a1a1a",
+                      color: "#ff6b6b",
+                      border: "1px solid #ff6b6b",
+                      fontWeight: "600",
+                    },
+                  });
+                }
+              }}
+              style={{
+                padding: "6px 14px",
+                background: "#e5484d",
+                border: "none",
+                borderRadius: "6px",
+                color: "#fff",
+                cursor: "pointer",
+                fontSize: "12px",
+                fontWeight: 600,
+              }}
+            >
+              Remove
+            </button>
+          </div>
+        </div>
+      ),
+      {
+        duration: 6000,
+        style: {
+          background: "#17171c",
+          color: "#fff",
+          border: "1px solid rgba(255,255,255,0.1)",
+          borderRadius: "10px",
+          padding: "16px",
+          maxWidth: "340px",
+        },
+      }
+    );
   };
 
   return (
@@ -96,7 +191,9 @@ const SubscribeUs = () => {
           {/* Stats - 2 Cards Full Width */}
           <div className="subscribeus-stats">
             <div className="stat-card">
-              <div className="stat-icon"><Bell size={22} /></div>
+              <div className="stat-icon">
+                <Bell size={22} />
+              </div>
               <div className="stat-info">
                 <p className="stat-label">Total Subscribers</p>
                 <h2 className="stat-value">{stats.totalSubscribers}</h2>
@@ -105,7 +202,9 @@ const SubscribeUs = () => {
             </div>
 
             <div className="stat-card">
-              <div className="stat-icon"><Users size={22} /></div>
+              <div className="stat-icon">
+                <Users size={22} />
+              </div>
               <div className="stat-info">
                 <p className="stat-label">Active Subscribers</p>
                 <h2 className="stat-value">{stats.activeSubscribers}</h2>
@@ -150,13 +249,19 @@ const SubscribeUs = () => {
               <tbody>
                 {loading ? (
                   <tr>
-                    <td colSpan={5} style={{ textAlign: 'center', padding: '30px' }}>
+                    <td
+                      colSpan={5}
+                      style={{ textAlign: "center", padding: "30px" }}
+                    >
                       Loading subscribers...
                     </td>
                   </tr>
                 ) : paginated.length === 0 ? (
                   <tr>
-                    <td colSpan={5} style={{ textAlign: 'center', padding: '30px' }}>
+                    <td
+                      colSpan={5}
+                      style={{ textAlign: "center", padding: "30px" }}
+                    >
                       No subscribers found.
                     </td>
                   </tr>
@@ -165,15 +270,24 @@ const SubscribeUs = () => {
                     <tr key={s._id}>
                       <td>{startIdx + index + 1}</td>
                       <td className="email-cell">
-                        <Mail size={14} style={{ marginRight: '6px', verticalAlign: 'middle' }} />
+                        <Mail
+                          size={14}
+                          style={{ marginRight: "6px", verticalAlign: "middle" }}
+                        />
                         {s.email}
                       </td>
                       <td className="date-cell">
-                        {new Date(s.subscribedAt || s.createdAt).toLocaleDateString()}
+                        {new Date(
+                          s.subscribedAt || s.createdAt
+                        ).toLocaleDateString()}
                       </td>
                       <td>
-                        <span className={`status-badge ${s.isActive ? 'active' : 'inactive'}`}>
-                          {s.isActive ? 'Active' : 'Inactive'}
+                        <span
+                          className={`status-badge ${
+                            s.isActive ? "active" : "inactive"
+                          }`}
+                        >
+                          {s.isActive ? "Active" : "Inactive"}
                         </span>
                       </td>
                       <td>
@@ -199,19 +313,25 @@ const SubscribeUs = () => {
           <div className="pagination-row">
             <p>
               Showing {filtered.length === 0 ? 0 : startIdx + 1} to{" "}
-              {Math.min(startIdx + ITEMS_PER_PAGE, filtered.length)} of {filtered.length} subscribers
+              {Math.min(startIdx + ITEMS_PER_PAGE, filtered.length)} of{" "}
+              {filtered.length} subscribers
             </p>
             <div className="pagination-controls">
               <button
                 type="button"
                 className="page-btn"
                 disabled={safePage === 1}
-                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               >
                 ‹
               </button>
               {Array.from({ length: totalPages }, (_, i) => i + 1)
-                .filter(num => num === 1 || num === totalPages || Math.abs(num - safePage) <= 1)
+                .filter(
+                  (num) =>
+                    num === 1 ||
+                    num === totalPages ||
+                    Math.abs(num - safePage) <= 1
+                )
                 .map((num, idx, arr) => (
                   <React.Fragment key={num}>
                     {idx > 0 && arr[idx - 1] !== num - 1 && (
@@ -230,7 +350,9 @@ const SubscribeUs = () => {
                 type="button"
                 className="page-btn"
                 disabled={safePage === totalPages}
-                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                onClick={() =>
+                  setCurrentPage((p) => Math.min(totalPages, p + 1))
+                }
               >
                 ›
               </button>

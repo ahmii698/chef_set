@@ -17,7 +17,7 @@
 .cust-content {
   background: #17171c;
   color: #e8e8e8;
-  padding: 28px 32px 28px 0;
+  padding: 28px 32px;
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
@@ -55,29 +55,6 @@
 
 .cust-breadcrumb-current {
   color: #f5a623;
-}
-
-.cust-btn-primary {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: linear-gradient(180deg, #f7b733 0%, #f5a623 100%);
-  color: #1a1a1a;
-  border: none;
-  border-radius: 8px;
-  padding: 11px 18px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: filter 0.15s ease, transform 0.1s ease;
-}
-
-.cust-btn-primary:hover {
-  filter: brightness(1.08);
-}
-
-.cust-btn-primary:active {
-  transform: translateY(1px);
 }
 
 /* ---------- Stats Cards ---------- */
@@ -193,39 +170,6 @@
   border-color: #f5a623;
 }
 
-.cust-filter-date {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: #1a1a1a;
-  border: 1px solid #2a2a2a;
-  color: #dcdcdc;
-  border-radius: 8px;
-  padding: 10px 14px;
-  font-size: 13px;
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-.cust-filter-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: #f5a623;
-  color: #1a1a1a;
-  border: none;
-  border-radius: 8px;
-  padding: 10px 16px;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-.cust-filter-btn:hover {
-  filter: brightness(1.08);
-}
-
 /* ---------- Table ---------- */
 .cust-table-wrapper {
   background: #1a1a1a;
@@ -266,35 +210,6 @@
 
 .cust-table tbody tr:hover {
   background: #202020;
-}
-
-.cust-customer-cell {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.cust-avatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 1px solid #333;
-}
-
-.cust-avatar-placeholder {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #f5a623, #d97a2e);
-  color: #1a1a1a;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 15px;
-  border: 1px solid #333;
-  flex-shrink: 0;
 }
 
 .cust-name {
@@ -742,7 +657,7 @@
 
 @media (max-width: 640px) {
   .cust-content {
-    padding: 18px 18px 18px 0;
+    padding: 18px;
   }
 
   .cust-stats-grid {

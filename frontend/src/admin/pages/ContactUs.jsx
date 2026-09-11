@@ -47,7 +47,15 @@ const ContactUs = () => {
         readMessages: 0
       });
     } catch (error) {
-      toast.error("Failed to fetch messages");
+      toast.error("Failed to fetch messages", {
+        duration: 3000,
+        style: {
+          background: "#3a1a1a",
+          color: "#ff6b6b",
+          border: "1px solid #ff6b6b",
+          fontWeight: "600",
+        },
+      });
     } finally {
       setLoading(false);
     }
@@ -82,7 +90,7 @@ const ContactUs = () => {
   // ===== VIEW MESSAGE (auto mark as read) =====
   const handleView = async (msg) => {
     setSelectedMessage(msg);
-    
+
     if (msg.status === 'pending') {
       try {
         await updateMessageStatus(msg._id, 'read');
@@ -99,35 +107,107 @@ const ContactUs = () => {
 
   const closeModal = () => setSelectedMessage(null);
 
-  // ===== DELETE (Simple & Working) =====
-  const handleDelete = async (msg) => {
-    console.log('🗑️ Delete clicked:', msg._id, msg.name);
-
-    const confirmed = window.confirm(`Delete message from "${msg.name}"?`);
-    if (!confirmed) {
-      console.log('❌ Cancelled');
-      return;
-    }
-
-    try {
-      console.log('📤 Sending DELETE request...');
-      await deleteContactMessage(msg._id);
-      
-      console.log('✅ Deleted successfully');
-      toast.success('Message deleted! 🗑️');
-      
-      // Update local state
-      setMessages(prev => prev.filter(x => x._id !== msg._id));
-      
-      // Close modal if open
-      if (selectedMessage?._id === msg._id) closeModal();
-      
-      // Refresh from server
-      fetchMessages();
-    } catch (error) {
-      console.error('❌ Delete error:', error);
-      toast.error(error.message || 'Failed to delete message');
-    }
+  // ===== DELETE (with custom toaster confirmation) =====
+  const handleDelete = (msg) => {
+    toast(
+      (t) => (
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "12px",
+            minWidth: "280px",
+          }}
+        >
+          <span style={{ fontWeight: 600, fontSize: "14px" }}>
+            Delete this message?
+          </span>
+          <span style={{ fontSize: "12px", color: "#999" }}>
+            Message from <strong style={{ color: "#e0983f" }}>{msg.name}</strong>
+            {" "}will be permanently removed.
+          </span>
+          <div
+            style={{
+              display: "flex",
+              gap: "8px",
+              justifyContent: "flex-end",
+            }}
+          >
+            <button
+              onClick={() => toast.dismiss(t.id)}
+              style={{
+                padding: "6px 14px",
+                background: "transparent",
+                border: "1px solid rgba(255,255,255,0.2)",
+                borderRadius: "6px",
+                color: "#fff",
+                cursor: "pointer",
+                fontSize: "12px",
+                fontWeight: 600,
+              }}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={async () => {
+                toast.dismiss(t.id);
+                try {
+                  await deleteContactMessage(msg._id);
+                  toast.success("Message deleted! 🗑️", {
+                    duration: 3000,
+                    style: {
+                      background: "#14321e",
+                      color: "#4ade80",
+                      border: "1px solid #4ade80",
+                      fontWeight: "600",
+                    },
+                    icon: "🎉",
+                  });
+                  setMessages((prev) =>
+                    prev.filter((x) => x._id !== msg._id)
+                  );
+                  if (selectedMessage?._id === msg._id) closeModal();
+                  fetchMessages();
+                } catch (error) {
+                  toast.error(error.message || "Failed to delete", {
+                    duration: 3000,
+                    style: {
+                      background: "#3a1a1a",
+                      color: "#ff6b6b",
+                      border: "1px solid #ff6b6b",
+                      fontWeight: "600",
+                    },
+                  });
+                }
+              }}
+              style={{
+                padding: "6px 14px",
+                background: "#e5484d",
+                border: "none",
+                borderRadius: "6px",
+                color: "#fff",
+                cursor: "pointer",
+                fontSize: "12px",
+                fontWeight: 600,
+              }}
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      ),
+      {
+        duration: 6000,
+        style: {
+          background: "#17171c",
+          color: "#fff",
+          border: "1px solid rgba(255,255,255,0.1)",
+          borderRadius: "10px",
+          padding: "16px",
+          maxWidth: "360px",
+        },
+      }
+    );
   };
 
   return (

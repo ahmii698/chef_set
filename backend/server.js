@@ -24,6 +24,9 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/chefsetDB
 
 // ==================== PUBLIC / USER ROUTES ====================
 
+// Upload (image upload - admin panel ke liye)
+app.use('/api/upload', require('./routes/upload'));
+
 // Products
 app.use('/api/products', require('./routes/products'));
 
@@ -73,6 +76,9 @@ app.use('/api/admin-auth', require('./routes/adminAuth'));
 
 // ==================== ADMIN ROUTES ====================
 
+// ✅ NAYA - Admin Dashboard (stats, sales, recent orders, top products, subscribers)
+app.use('/api/dashboard', require('./routes/dashboard'));
+
 // Admin Products
 app.use('/api/admin-products', require('./routes/adminProducts'));
 
@@ -91,7 +97,7 @@ app.use('/api/admin-faq', require('./routes/adminFaq'));
 // Admin Contact Messages
 app.use('/api/admin-contact-messages', require('./routes/admin_contactMessage'));
 
-// Admin Newsletter (Subscribe Us) ✅ NAYA
+// Admin Newsletter (Subscribe Us)
 app.use('/api/admin-newsletter', require('./routes/admin_newsletter'));
 
 // ==================== ERROR HANDLING ====================
@@ -119,6 +125,7 @@ app.listen(PORT, () => {
   console.log(`📁 Storage: http://localhost:${PORT}/storage`);
   console.log(`📁 Uploads: http://localhost:${PORT}/uploads`);
   console.log(`\n📋 PUBLIC / USER ROUTES:`);
+  console.log(`   - /api/upload                   ← Image Upload`);
   console.log(`   - /api/products`);
   console.log(`   - /api/about-header`);
   console.log(`   - /api/about-story`);
@@ -144,6 +151,7 @@ app.listen(PORT, () => {
   console.log(`   - /api/auth`);
   console.log(`   - /api/admin-auth`);
   console.log(`\n🔒 ADMIN ROUTES:`);
+  console.log(`   - /api/dashboard                ← Dashboard Stats/Graph`);
   console.log(`   - /api/admin-products`);
   console.log(`   - /api/admin-orders`);
   console.log(`   - /api/admin-users              ← Customers`);

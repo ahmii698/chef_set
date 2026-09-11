@@ -62,7 +62,7 @@ const Header = ({
 
           {dropdownOpen && (
             <div className="admin-dropdown">
-              <button onClick={handleProfile}>Profile</button>
+       
               <button onClick={handleLogout}>Logout</button>
             </div>
           )}

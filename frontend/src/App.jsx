@@ -28,15 +28,14 @@ import AdminLogin from './admin/pages/Login';
 import AdminForgotPassword from './admin/pages/forgot';
 import AdminCreateAccount from './admin/pages/create_account';
 import AdminDashboard from './admin/pages/Dashboard';
+import AdminHome from './admin/pages/Home';              // ✅ NAYA - Home
 import AdminProducts from './admin/pages/Products';
 import AdminOrders from './admin/pages/Orders';
 import AdminCustomers from './admin/pages/Customers';
 import AdminCategories from './admin/pages/category';
 import AdminTestimonials from './admin/pages/Testimonials';
 import AdminFAQ from './admin/pages/Faq';
-import AdminAboutUs from './admin/pages/About_us';
-
-// ✅ NAYA - Admin Contact & Subscribe
+import AdminAboutUs from './admin/pages/AboutUs';
 import AdminContactUs from './admin/pages/ContactUs';
 import AdminSubscribeUs from './admin/pages/SubscribeUs';
 
@@ -122,6 +121,17 @@ function AppContent() {
               </AdminProtectedRoute>
             }
           />
+
+          {/* ✅ NAYA - Admin Home */}
+          <Route
+            path="/admin/home"
+            element={
+              <AdminProtectedRoute>
+                <AdminHome />
+              </AdminProtectedRoute>
+            }
+          />
+
           <Route
             path="/admin/products"
             element={
@@ -178,8 +188,6 @@ function AppContent() {
               </AdminProtectedRoute>
             }
           />
-
-          {/* ✅ NAYA - Admin Contact Us */}
           <Route
             path="/admin/contact-us"
             element={
@@ -188,8 +196,6 @@ function AppContent() {
               </AdminProtectedRoute>
             }
           />
-
-          {/* ✅ NAYA - Admin Subscribe Us */}
           <Route
             path="/admin/subscribe-us"
             element={

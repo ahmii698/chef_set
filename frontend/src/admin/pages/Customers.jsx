@@ -1,9 +1,9 @@
 // src/admin/pages/Customers.jsx
 import React, { useState, useEffect, useMemo } from "react";
 import {
-  Search, Filter, Calendar, Eye, Trash2, ChevronLeft, ChevronRight,
-  Users, UserCheck, UserX, Briefcase, Download, X, Mail, Phone,
-  ShoppingBag, CheckCircle2
+  Search, Eye, Trash2, ChevronLeft, ChevronRight,
+  Users, UserCheck, UserX, Briefcase, X,
+  ShoppingBag
 } from "lucide-react";
 import toast from "react-hot-toast";
 import Sidebar from "../components/Sidebar";
@@ -66,8 +66,7 @@ export default function CustomerPage() {
     return customers.filter((c) => {
       const matchesSearch =
         c.fullName?.toLowerCase().includes(search.toLowerCase()) ||
-        c.email?.toLowerCase().includes(search.toLowerCase()) ||
-        c.phone?.toLowerCase().includes(search.toLowerCase());
+        c.email?.toLowerCase().includes(search.toLowerCase());
       const matchesStatus = statusFilter === "All Status" || c.status === statusFilter;
       return matchesSearch && matchesStatus;
     });
@@ -151,40 +150,6 @@ export default function CustomerPage() {
     });
   };
 
-  // ===== EXPORT =====
-  const handleExport = () => {
-    if (customers.length === 0) {
-      toast.error("No customers to export");
-      return;
-    }
-
-    const headers = ['Name', 'Email', 'Phone', 'Orders', 'Total Spent', 'Status', 'Joined'];
-    const rows = customers.map(c => [
-      c.fullName,
-      c.email,
-      c.phone,
-      c.totalOrders,
-      c.totalSpent,
-      c.status,
-      new Date(c.createdAt).toLocaleDateString()
-    ]);
-
-    const csvContent = [
-      headers.join(','),
-      ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
-    ].join('\n');
-
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `customers-${Date.now()}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-
-    toast.success('Customers exported! 📥');
-  };
-
   return (
     <div className="cust-layout">
       <div className={`sidebar-wrapper ${sidebarOpen ? "" : "collapsed"}`}>
@@ -205,10 +170,6 @@ export default function CustomerPage() {
                 <span className="cust-breadcrumb-current">Customers</span>
               </div>
             </div>
-            <button className="cust-btn-primary" onClick={handleExport}>
-              <Download size={16} strokeWidth={2.5} />
-              Export Customers
-            </button>
           </div>
 
           {/* Stats Cards */}
@@ -264,7 +225,7 @@ export default function CustomerPage() {
               <Search size={16} className="cust-search-icon" />
               <input
                 type="text"
-                placeholder="Search by name, email or phone..."
+                placeholder="Search by name or email..."
                 value={search}
                 onChange={(e) => {
                   setSearch(e.target.value);
@@ -295,7 +256,6 @@ export default function CustomerPage() {
                   <th>#</th>
                   <th>Customer</th>
                   <th>Email</th>
-                  <th>Phone</th>
                   <th>Orders</th>
                   <th>Total Spent</th>
                   <th>Status</th>
@@ -306,26 +266,20 @@ export default function CustomerPage() {
               <tbody>
                 {loading ? (
                   <tr>
-                    <td colSpan={9} className="cust-empty">Loading customers...</td>
+                    <td colSpan={8} className="cust-empty">Loading customers...</td>
                   </tr>
                 ) : paginatedCustomers.length === 0 ? (
                   <tr>
-                    <td colSpan={9} className="cust-empty">No customers found.</td>
+                    <td colSpan={8} className="cust-empty">No customers found.</td>
                   </tr>
                 ) : (
                   paginatedCustomers.map((c, idx) => (
                     <tr key={c._id}>
                       <td>{startIdx + idx + 1}</td>
                       <td>
-                        <div className="cust-customer-cell">
-                          <div className="cust-avatar-placeholder">
-                            {c.fullName?.charAt(0)?.toUpperCase() || 'U'}
-                          </div>
-                          <span className="cust-name">{c.fullName}</span>
-                        </div>
+                        <span className="cust-name">{c.fullName}</span>
                       </td>
                       <td className="cust-muted">{c.email}</td>
-                      <td className="cust-muted">{c.phone}</td>
                       <td>{c.totalOrders}</td>
                       <td className="cust-total">PKR {c.totalSpent.toLocaleString()}</td>
                       <td>
@@ -431,10 +385,6 @@ export default function CustomerPage() {
                   <div className="info-item">
                     <span className="info-label">Email</span>
                     <span className="info-value">{selectedCustomer.email}</span>
-                  </div>
-                  <div className="info-item">
-                    <span className="info-label">Phone</span>
-                    <span className="info-value">{selectedCustomer.phone}</span>
                   </div>
                   <div className="info-item">
                     <span className="info-label">Status</span>

@@ -3,6 +3,7 @@ import React from "react";
 import { NavLink } from "react-router-dom";
 import {
   LayoutDashboard,
+  Home as HomeIcon,
   Package,
   ShoppingCart,
   Users,
@@ -10,13 +11,14 @@ import {
   MessageSquareQuote,
   HelpCircle,
   Info,
-  Mail,              // ✅ Naya - Contact
-  Bell,              // ✅ Naya - Subscribe
+  Mail,
+  Bell,
 } from "lucide-react";
 import "./Sidebar.css";
 
 const menuItems = [
   { name: "Dashboard", icon: LayoutDashboard, path: "/admin/dashboard" },
+  { name: "Home", icon: HomeIcon, path: "/admin/home" },
   { name: "Products", icon: Package, path: "/admin/products" },
   { name: "Orders", icon: ShoppingCart, path: "/admin/orders" },
   { name: "Customers", icon: Users, path: "/admin/customers" },
@@ -24,14 +26,13 @@ const menuItems = [
   { name: "Testimonials", icon: MessageSquareQuote, path: "/admin/testimonials" },
   { name: "FAQ", icon: HelpCircle, path: "/admin/faq" },
   { name: "About Us", icon: Info, path: "/admin/about-us" },
-  { name: "Contact Us", icon: Mail, path: "/admin/contact-us" },        // ✅ NAYA
-  { name: "Subscribe Us", icon: Bell, path: "/admin/subscribe-us" },    // ✅ NAYA
+  { name: "Contact Us", icon: Mail, path: "/admin/contact-us" },
+  { name: "Subscribe Us", icon: Bell, path: "/admin/subscribe-us" },
 ];
 
-const Sidebar = ({ onLogout }) => {
+const Sidebar = () => {
   return (
     <aside className="sidebar">
-      {/* Logo */}
       <div className="sidebar-logo">
         <h1 className="logo-text">
           CHEF<span>SET</span>
@@ -39,7 +40,6 @@ const Sidebar = ({ onLogout }) => {
         <p className="logo-subtitle">ADMIN PANEL</p>
       </div>
 
-      {/* Menu */}
       <nav className="sidebar-menu">
         {menuItems.map((item) => {
           const Icon = item.icon;
@@ -58,7 +58,6 @@ const Sidebar = ({ onLogout }) => {
         })}
       </nav>
 
-      {/* Footer image + Logout */}
       <div
         className="sidebar-footer"
         style={{ backgroundImage: `url(/images/chi1.png)` }}

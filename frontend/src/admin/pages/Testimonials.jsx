@@ -18,12 +18,12 @@ import "./Testimonials.css";
 
 // ===== Stars Component =====
 const Stars = ({ count, interactive = false, onChange }) => (
-  <div className="stars">
+  <div className="admin_testimonial_stars">
     {[1, 2, 3, 4, 5].map((i) => (
       <Star
         key={i}
         size={16}
-        className={i <= count ? "star filled" : "star"}
+        className={i <= count ? "admin_testimonial_star filled" : "admin_testimonial_star"}
         fill={i <= count ? "#e6a730" : "none"}
         onClick={interactive ? () => onChange(i) : undefined}
         style={interactive ? { cursor: 'pointer' } : undefined}
@@ -248,70 +248,70 @@ const Testimonials = () => {
   };
 
   return (
-    <div className="testimonials-layout">
-      <div className={`sidebar-wrapper ${sidebarOpen ? "" : "collapsed"}`}>
+    <div className="admin_testimonial_layout">
+      <div className={`admin_testimonial_sidebar_wrapper ${sidebarOpen ? "" : "collapsed"}`}>
         <Sidebar />
       </div>
 
-      <div className="testimonials-main">
+      <div className="admin_testimonial_main">
         <Header onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
 
-        <div className="testimonials-content">
+        <div className="admin_testimonial_content">
           {/* Header */}
-          <div className="testimonials-header">
+          <div className="admin_testimonial_header">
             <div>
-              <h1 className="testimonials-title">Testimonials Management</h1>
-              <div className="testimonials-breadcrumb">
+              <h1 className="admin_testimonial_title">Testimonials Management</h1>
+              <div className="admin_testimonial_breadcrumb">
                 <span>Dashboard</span>
-                <span className="breadcrumb-sep">›</span>
-                <span className="breadcrumb-active">Testimonials</span>
+                <span className="admin_testimonial_breadcrumb_sep">›</span>
+                <span className="admin_testimonial_breadcrumb_active">Testimonials</span>
               </div>
             </div>
-            <button className="btn-primary" onClick={handleAddNew}>
+            <button className="admin_testimonial_btn_primary" onClick={handleAddNew}>
               <Plus size={16} />
               Add New Testimonial
             </button>
           </div>
 
           {/* Stats Cards - 3 Only */}
-          <div className="stats-grid">
-            <div className="stat-card">
-              <div className="stat-icon">
+          <div className="admin_testimonial_stats_grid">
+            <div className="admin_testimonial_stat_card">
+              <div className="admin_testimonial_stat_icon">
                 <MessageSquare size={20} />
               </div>
               <div>
-                <p className="stat-label">Total Testimonials</p>
-                <h2 className="stat-value">{stats.totalTestimonials}</h2>
-                <p className="stat-sub">All Testimonials</p>
+                <p className="admin_testimonial_stat_label">Total Testimonials</p>
+                <h2 className="admin_testimonial_stat_value">{stats.totalTestimonials}</h2>
+                <p className="admin_testimonial_stat_sub">All Testimonials</p>
               </div>
             </div>
 
-            <div className="stat-card">
-              <div className="stat-icon">
+            <div className="admin_testimonial_stat_card">
+              <div className="admin_testimonial_stat_icon">
                 <CheckCircle size={20} />
               </div>
               <div>
-                <p className="stat-label">Active Testimonials</p>
-                <h2 className="stat-value">{stats.activeTestimonials}</h2>
-                <p className="stat-sub green">Showing on Website</p>
+                <p className="admin_testimonial_stat_label">Active Testimonials</p>
+                <h2 className="admin_testimonial_stat_value">{stats.activeTestimonials}</h2>
+                <p className="admin_testimonial_stat_sub green">Showing on Website</p>
               </div>
             </div>
 
-            <div className="stat-card">
-              <div className="stat-icon">
+            <div className="admin_testimonial_stat_card">
+              <div className="admin_testimonial_stat_icon">
                 <EyeOff size={20} />
               </div>
               <div>
-                <p className="stat-label">Inactive Testimonials</p>
-                <h2 className="stat-value">{stats.inactiveTestimonials}</h2>
-                <p className="stat-sub red">Hidden from Website</p>
+                <p className="admin_testimonial_stat_label">Inactive Testimonials</p>
+                <h2 className="admin_testimonial_stat_value">{stats.inactiveTestimonials}</h2>
+                <p className="admin_testimonial_stat_sub red">Hidden from Website</p>
               </div>
             </div>
           </div>
 
           {/* Filters Row */}
-          <div className="filters-row">
-            <div className="table-search">
+          <div className="admin_testimonial_filters_row">
+            <div className="admin_testimonial_table_search">
               <Search size={16} />
               <input
                 type="text"
@@ -325,7 +325,7 @@ const Testimonials = () => {
             </div>
 
             <select
-              className="select-input"
+              className="admin_testimonial_select_input"
               value={statusFilter}
               onChange={(e) => {
                 setStatusFilter(e.target.value);
@@ -338,7 +338,7 @@ const Testimonials = () => {
             </select>
 
             <select
-              className="select-input"
+              className="admin_testimonial_select_input"
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
             >
@@ -347,15 +347,15 @@ const Testimonials = () => {
               <option value="Rating">Sort by: Rating</option>
             </select>
 
-            <button className="btn-filter" onClick={fetchTestimonials} title="Refresh">
+            <button className="admin_testimonial_btn_filter" onClick={fetchTestimonials} title="Refresh">
               <RefreshCw size={14} />
               Refresh
             </button>
           </div>
 
           {/* Table */}
-          <div className="table-wrapper">
-            <table className="testimonials-table">
+          <div className="admin_testimonial_table_wrapper">
+            <table className="admin_testimonial_table">
               <thead>
                 <tr>
                   <th>#</th>
@@ -385,9 +385,9 @@ const Testimonials = () => {
                   paginated.map((t, index) => (
                     <tr key={t._id}>
                       <td>{startIdx + index + 1}</td>
-                      <td className="name-cell">{t.name}</td>
-                      <td className="profession-cell">{t.role}</td>
-                      <td className="testimonial-text-cell">
+                      <td className="admin_testimonial_name_cell">{t.name}</td>
+                      <td className="admin_testimonial_profession_cell">{t.role}</td>
+                      <td className="admin_testimonial_text_cell">
                         "{t.text.length > 60 ? t.text.substring(0, 60) + '...' : t.text}"
                       </td>
                       <td>
@@ -395,7 +395,7 @@ const Testimonials = () => {
                       </td>
                       <td>
                         <span
-                          className={`status-badge ${t.isActive ? "active" : "inactive"}`}
+                          className={`admin_testimonial_status_badge ${t.isActive ? "active" : "inactive"}`}
                           onClick={() => handleToggle(t)}
                           style={{ cursor: 'pointer' }}
                           title="Click to toggle"
@@ -404,10 +404,10 @@ const Testimonials = () => {
                         </span>
                       </td>
                       <td>
-                        <p className="date-cell">
+                        <p className="admin_testimonial_date_cell">
                           {new Date(t.createdAt).toLocaleDateString()}
                         </p>
-                        <p className="time-cell">
+                        <p className="admin_testimonial_time_cell">
                           {new Date(t.createdAt).toLocaleTimeString([], {
                             hour: '2-digit',
                             minute: '2-digit'
@@ -415,16 +415,16 @@ const Testimonials = () => {
                         </p>
                       </td>
                       <td>
-                        <div className="action-btns">
+                        <div className="admin_testimonial_action_btns">
                           <button
-                            className="icon-btn edit"
+                            className="admin_testimonial_icon_btn edit"
                             onClick={() => handleEdit(t)}
                             title="Edit"
                           >
                             <Edit size={15} />
                           </button>
                           <button
-                            className="icon-btn delete"
+                            className="admin_testimonial_icon_btn delete"
                             onClick={() => handleDelete(t)}
                             title="Delete"
                           >
@@ -440,14 +440,14 @@ const Testimonials = () => {
           </div>
 
           {/* Pagination */}
-          <div className="pagination-row">
+          <div className="admin_testimonial_pagination_row">
             <p>
               Showing {filtered.length === 0 ? 0 : startIdx + 1} to{" "}
               {Math.min(startIdx + ITEMS_PER_PAGE, filtered.length)} of {filtered.length} testimonials
             </p>
-            <div className="pagination-controls">
+            <div className="admin_testimonial_pagination_controls">
               <button
-                className="page-btn"
+                className="admin_testimonial_page_btn"
                 disabled={safePage === 1}
                 onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
               >
@@ -458,10 +458,10 @@ const Testimonials = () => {
                 .map((num, idx, arr) => (
                   <React.Fragment key={num}>
                     {idx > 0 && arr[idx - 1] !== num - 1 && (
-                      <span className="page-dots">...</span>
+                      <span className="admin_testimonial_page_dots">...</span>
                     )}
                     <button
-                      className={`page-btn ${safePage === num ? "active" : ""}`}
+                      className={`admin_testimonial_page_btn ${safePage === num ? "active" : ""}`}
                       onClick={() => setCurrentPage(num)}
                     >
                       {num}
@@ -469,7 +469,7 @@ const Testimonials = () => {
                   </React.Fragment>
                 ))}
               <button
-                className="page-btn"
+                className="admin_testimonial_page_btn"
                 disabled={safePage === totalPages}
                 onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
               >
@@ -482,22 +482,22 @@ const Testimonials = () => {
 
       {/* ===== MODAL ===== */}
       {showModal && (
-        <div className="modal-overlay" onClick={closeModal}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
+        <div className="admin_testimonial_modal_overlay" onClick={closeModal}>
+          <div className="admin_testimonial_modal_content" onClick={(e) => e.stopPropagation()}>
+            <div className="admin_testimonial_modal_header">
               <div>
                 <h2>{editingId ? "Edit Testimonial" : "Add New Testimonial"}</h2>
-                <p className="modal-subtitle">
+                <p className="admin_testimonial_modal_subtitle">
                   {editingId ? "Update testimonial details" : "Fill in the details below"}
                 </p>
               </div>
-              <button className="modal-close" onClick={closeModal}>
+              <button className="admin_testimonial_modal_close" onClick={closeModal}>
                 <X size={20} />
               </button>
             </div>
 
-            <div className="modal-body">
-              <div className="form-group">
+            <div className="admin_testimonial_modal_body">
+              <div className="admin_testimonial_form_group">
                 <label>Name *</label>
                 <input
                   type="text"
@@ -508,7 +508,7 @@ const Testimonials = () => {
                 />
               </div>
 
-              <div className="form-group">
+              <div className="admin_testimonial_form_group">
                 <label>Role / Profession *</label>
                 <input
                   type="text"
@@ -519,7 +519,7 @@ const Testimonials = () => {
                 />
               </div>
 
-              <div className="form-group">
+              <div className="admin_testimonial_form_group">
                 <label>Testimonial Text *</label>
                 <textarea
                   name="text"
@@ -530,8 +530,8 @@ const Testimonials = () => {
                 />
               </div>
 
-              <div className="form-row-2">
-                <div className="form-group">
+              <div className="admin_testimonial_form_row_2">
+                <div className="admin_testimonial_form_group">
                   <label>Rating</label>
                   <Stars
                     count={form.rating}
@@ -540,7 +540,7 @@ const Testimonials = () => {
                   />
                 </div>
 
-                <div className="form-group">
+                <div className="admin_testimonial_form_group">
                   <label>Display Order</label>
                   <input
                     type="number"
@@ -552,8 +552,8 @@ const Testimonials = () => {
                 </div>
               </div>
 
-              <div className="form-group toggle-group">
-                <label className="switch-label">
+              <div className="admin_testimonial_form_group admin_testimonial_toggle_group">
+                <label className="admin_testimonial_switch_label">
                   <input
                     type="checkbox"
                     name="isActive"
@@ -565,11 +565,11 @@ const Testimonials = () => {
               </div>
             </div>
 
-            <div className="modal-footer">
-              <button className="cancel-btn" onClick={closeModal}>
+            <div className="admin_testimonial_modal_footer">
+              <button className="admin_testimonial_cancel_btn" onClick={closeModal}>
                 Cancel
               </button>
-              <button className="save-btn" onClick={handleSave} disabled={saving}>
+              <button className="admin_testimonial_save_btn" onClick={handleSave} disabled={saving}>
                 <Save size={16} />
                 {saving ? "Saving..." : editingId ? "Update" : "Create"}
               </button>
